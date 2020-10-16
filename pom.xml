@@ -21,6 +21,15 @@
         <flink.version>1.11.1</flink.version>
     </properties>
 
+
+    <repositories>
+        <repository>
+            <id>universityOfManchester-graal</id>
+            <url>https://raw.githubusercontent.com/beehive-lab/tornado/maven-tornadovm</url>
+        </repository>
+    </repositories>
+
+
     <dependencies>
         <dependency> <!-- Unused declared dependency -->
             <groupId>javax.servlet</groupId>
@@ -136,6 +145,47 @@
             <artifactId>flink-runtime_2.12</artifactId>
             <version>${flink.version}</version>
             <scope>compile</scope>
+        </dependency>
+
+
+        <!-- ASM -->
+        <dependency>
+            <groupId>org.ow2.asm</groupId>
+            <artifactId>asm</artifactId>
+            <version>6.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.ow2.asm</groupId>
+            <artifactId>asm-util</artifactId>
+            <version>6.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.ow2.asm</groupId>
+            <artifactId>asm-commons</artifactId>
+            <version>6.2</version>
+        </dependency>
+
+
+        <!-- TornadoVM -->
+        <dependency>
+            <groupId>tornado</groupId>
+            <artifactId>tornado-api</artifactId>
+            <version>0.7</version>
+        </dependency>
+        <dependency>
+            <groupId>tornado</groupId>
+            <artifactId>tornado-matrices</artifactId>
+            <version>0.7</version>
+        </dependency>
+        <dependency>
+            <groupId>tornado</groupId>
+            <artifactId>tornado-drivers-opencl</artifactId>
+            <version>0.7</version>
+        </dependency>
+        <dependency>
+            <groupId>tornado</groupId>
+            <artifactId>tornado-drivers-opencl-jni</artifactId>
+            <version>0.7</version>
         </dependency>
 
 
