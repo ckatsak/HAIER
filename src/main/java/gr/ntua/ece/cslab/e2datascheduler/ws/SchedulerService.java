@@ -8,10 +8,10 @@ import gr.ntua.ece.cslab.e2datascheduler.beans.profiling.TornadoProfilingInfoRoo
 import gr.ntua.ece.cslab.e2datascheduler.graph.HaierExecutionGraph;
 import gr.ntua.ece.cslab.e2datascheduler.optimizer.nsga.NSGAIIParameters;
 import gr.ntua.ece.cslab.e2datascheduler.util.HaierLogHandler;
+import gr.ntua.ece.cslab.e2datascheduler.util.HaierUDFLoader;
 import gr.ntua.ece.cslab.e2datascheduler.util.SelectionQueue;
 
 import org.apache.flink.api.common.functions.MapFunction;
-import org.apache.flink.api.common.functions.RichMapFunction;
 import org.apache.flink.configuration.ConfigOption;
 import org.apache.flink.configuration.ConfigOptions;
 import org.apache.flink.runtime.blob.PermanentBlobKey;
@@ -54,6 +54,7 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.concurrent.BlockingQueue;
 import java.util.logging.Logger;
+
 
 /**
  * REST API of {@link E2dScheduler}
@@ -387,9 +388,9 @@ public class SchedulerService extends AbstractE2DataService {
             if (null != udf && vertex.getConfiguration().contains(driverClassOption)) {
                 final String driverClass = vertex.getConfiguration().getValue(driverClassOption);
                 if (driverClass.endsWith("MapDriver")) {
-                    RichMapFunction mapLambda;
+                    MapFunction mapLambda;
                     try (final ObjectInputStream objectIn = new ObjectInputStream(new ByteArrayInputStream(udf))) {
-                        mapLambda = (RichMapFunction) objectIn.readObject();
+                        mapLambda = (MapFunction) objectIn.readObject();
                         inspectionMsg += "CKATSAK: Successfully deserialized the Map Lambda from the UDF byte array! (" +
                                 mapLambda.toString() + ")\n";
                     } catch (Exception e) {
@@ -404,9 +405,15 @@ public class SchedulerService extends AbstractE2DataService {
         }
         HaierExecutionGraph.logOffloadability(jobGraph);
 
+        //=========================================================================================
+        //  vvv   User's JAR inspection/manipulation   vvv
+        //=========================================================================================
+
+        final List<org.apache.flink.core.fs.Path> jars = new ArrayList<>();
         String userJarsPaths = "User Jars Paths:\n";
         for (org.apache.flink.core.fs.Path p : jobGraph.getUserJars()) {
             userJarsPaths += "- " + p.getName() + " @ " + p.getPath() + "\n";
+            jars.add(p);
         }
         logger.finest(userJarsPaths);
         userJarsPaths = "User Jar BLOB Keys:\n";
@@ -414,7 +421,62 @@ public class SchedulerService extends AbstractE2DataService {
             userJarsPaths += "- " + p.toString() + "\n";
         }
         logger.finest(userJarsPaths);
+
+        logger.finest("jobGraph.hasUsercodeJarFiles() = " + jobGraph.hasUsercodeJarFiles());
+
+        String inspectionMsg = "Scanning JAR files for .class files:";
+        for (org.apache.flink.core.fs.Path path : jars) {
+            inspectionMsg += "\n* Class names in '" + path.getPath() + "':\n";
+            try {
+                final List<String> foundClasses = HaierUDFLoader.scanJarFileForClasses(new File(path.getPath()));
+                for (String className : foundClasses) {
+                    inspectionMsg += "\t- " + className + "\n";
+                }
+            } catch (IOException e) {
+                final StringWriter sw = new StringWriter();
+                inspectionMsg += "Error scanning for .class files in '" + path.getPath() + "' ... :\n";
+                e.printStackTrace(new PrintWriter(sw));
+                inspectionMsg += sw.toString() + "";
+            }
+        }
+        logger.finest(inspectionMsg + "\n");
+
+        inspectionMsg = "\n";
+        for (org.apache.flink.core.fs.Path path : jars) {
+            inspectionMsg = "* Classes implementing Flink MapFunction in '" + path.getName() + "':\n";
+            try {
+                for (Class<?> clazz : HaierUDFLoader.scanJarFileForMapFunctionClasses(new File(path.getPath()))) {
+                    inspectionMsg += "\t- " + clazz.getCanonicalName() + "\n";
+                }
+            } catch (IOException e) {
+                final StringWriter sw = new StringWriter();
+                inspectionMsg += "\nError scanning for MapFunction classes in '" + path.getPath() + "' ... :\n";
+                e.printStackTrace(new PrintWriter(sw));
+                inspectionMsg += sw.toString() + "";
+            }
+        }
+        logger.finest(inspectionMsg);
+
+        inspectionMsg = "\n";
+        for (org.apache.flink.core.fs.Path path : jars) {
+            inspectionMsg = "* Classes implementing Flink ReduceFunction in '" + path.getName() + "':\n";
+            try {
+                for (Class<?> clazz : HaierUDFLoader.scanJarFileForReduceFunctionClasses(new File(path.getPath()))) {
+                    inspectionMsg += "\t- " + clazz.getCanonicalName() + "\n";
+                }
+            } catch (IOException e) {
+                final StringWriter sw = new StringWriter();
+                inspectionMsg += "\nError scanning for ReduceFunction classes in '" + path.getPath() + "' ... :\n";
+                e.printStackTrace(new PrintWriter(sw));
+                inspectionMsg += sw.toString() + "";
+            }
+        }
+        logger.finest(inspectionMsg);
     }
+
+    //=========================================================================================
+    //  ^^^   User's JAR inspection/manipulation   ^^^
+    //=========================================================================================
 
 }
 
