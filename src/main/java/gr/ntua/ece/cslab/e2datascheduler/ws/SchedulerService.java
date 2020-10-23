@@ -8,10 +8,12 @@ import gr.ntua.ece.cslab.e2datascheduler.beans.profiling.TornadoProfilingInfoRoo
 import gr.ntua.ece.cslab.e2datascheduler.graph.HaierExecutionGraph;
 import gr.ntua.ece.cslab.e2datascheduler.optimizer.nsga.NSGAIIParameters;
 import gr.ntua.ece.cslab.e2datascheduler.util.HaierLogHandler;
-import gr.ntua.ece.cslab.e2datascheduler.util.HaierUDFLoader;
+import gr.ntua.ece.cslab.e2datascheduler.util.udf.HaierObjectInputStreamOfFlinkUDF;
+import gr.ntua.ece.cslab.e2datascheduler.util.udf.HaierUDFLoader;
 import gr.ntua.ece.cslab.e2datascheduler.util.SelectionQueue;
 
 import org.apache.flink.api.common.functions.MapFunction;
+import org.apache.flink.api.common.operators.util.UserCodeObjectWrapper;
 import org.apache.flink.configuration.ConfigOption;
 import org.apache.flink.configuration.ConfigOptions;
 import org.apache.flink.runtime.blob.PermanentBlobKey;
@@ -284,7 +286,7 @@ public class SchedulerService extends AbstractE2DataService {
                             "}" +
                         "}";
 
-        debuggingInspection(jobGraph); // FIXME(ckatsak) debugging logging
+        this.debuggingInspection(jobGraph); // FIXME(ckatsak) debugging logging
 
         final E2dScheduler.SchedulingResult result =
                 this.scheduler.schedule(jobGraph, OptimizationPolicy.parseJSON(policyStr));
@@ -331,7 +333,7 @@ public class SchedulerService extends AbstractE2DataService {
     // --------------------------------------------------------------------------------------------
 
 
-    private static void debuggingInspection(final JobGraph jobGraph) {
+    private void debuggingInspection(final JobGraph jobGraph) {
         logger.info("JVM Runtime Information:\n" + E2dScheduler.JVMRuntimeInfo());
 ///        for (JobVertex vertex : jobGraph.getVerticesSortedTopologicallyFromSources()) {
 ///            String str = "JobVertex: " + vertex.getID().toString() + ", " + vertex.getName() + "\n";
@@ -350,8 +352,9 @@ public class SchedulerService extends AbstractE2DataService {
 ///            logger.finest(str);
 ///        }
 
-        final List<Class<?>> mapClasses = HaierUDFLoader.getAllUserDefinedMapFunctions(jobGraph);
-        final List<Class<?>> reduceClasses = HaierUDFLoader.getAllUserDefinedReduceFunctions(jobGraph);
+        final HaierUDFLoader haierUDFLoader = new HaierUDFLoader(jobGraph, this.getClass().getClassLoader());
+        final List<Class<?>> mapClasses = haierUDFLoader.getAllUserDefinedMapFunctions();
+        final List<Class<?>> reduceClasses = haierUDFLoader.getAllUserDefinedReduceFunctions();
 
         for (JobVertex vertex : jobGraph.getVerticesSortedTopologicallyFromSources()) {
             // General information about the JobVertex at hand:
@@ -396,10 +399,15 @@ public class SchedulerService extends AbstractE2DataService {
             if (null != udf && vertex.getConfiguration().contains(driverClassOption)) {
                 final String driverClass = vertex.getConfiguration().getValue(driverClassOption);
                 if (driverClass.endsWith("MapDriver")) {
-                    MapFunction mapLambda;
-                    try (final ObjectInputStream objectIn = new ObjectInputStream(new ByteArrayInputStream(udf))) {
-                        mapLambda = (MapFunction) objectIn.readObject();
-                        inspectionMsg += "Successfully deserialized the Map Lambda from the UDF byte array: " + mapLambda + "\n";
+                    final UserCodeObjectWrapper userCodeObjectWrapper;
+                    final MapFunction mapLambda;
+                    try (final ObjectInputStream objectInputStream =
+                                 new HaierObjectInputStreamOfFlinkUDF(new ByteArrayInputStream(udf), haierUDFLoader)
+                    ) {
+                        userCodeObjectWrapper = (UserCodeObjectWrapper) objectInputStream.readObject();
+                        inspectionMsg += "Successfully deserialized the UDF byte array: " + userCodeObjectWrapper + "\n";
+                        mapLambda = (MapFunction) userCodeObjectWrapper.getUserCodeObject();
+                        inspectionMsg += "Successfully retrieved the Map lambda from it: " + mapLambda + "\n";
                     } catch (final IOException | ClassNotFoundException e) {
                         final StringWriter sw = new StringWriter();
                         inspectionMsg += "Error deserializing the UDF byte array... :\n";
@@ -453,11 +461,11 @@ public class SchedulerService extends AbstractE2DataService {
         logger.finest(inspectionMsg + "\n");
 
         inspectionMsg = "\n* User-defined classes implementing `MapFunction`:\n";
-        for (Class<?> clazz : HaierUDFLoader.getAllUserDefinedMapFunctions(jobGraph)) {
+        for (Class<?> clazz : haierUDFLoader.getAllUserDefinedMapFunctions()) {
             inspectionMsg += "\t- " + clazz.toString() + "\n";
         }
         inspectionMsg += "\n* User-defined classes implementing `ReduceFunction`:\n";
-        for (Class<?> clazz : HaierUDFLoader.getAllUserDefinedReduceFunctions(jobGraph)) {
+        for (Class<?> clazz : haierUDFLoader.getAllUserDefinedReduceFunctions()) {
             inspectionMsg += "\t- " + clazz.toString() + "\n";
         }
         logger.finest(inspectionMsg);
