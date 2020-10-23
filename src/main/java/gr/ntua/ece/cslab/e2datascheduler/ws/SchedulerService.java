@@ -349,6 +349,10 @@ public class SchedulerService extends AbstractE2DataService {
 ///            }
 ///            logger.finest(str);
 ///        }
+
+        final List<Class<?>> mapClasses = HaierUDFLoader.getAllUserDefinedMapFunctions(jobGraph);
+        final List<Class<?>> reduceClasses = HaierUDFLoader.getAllUserDefinedReduceFunctions(jobGraph);
+
         for (JobVertex vertex : jobGraph.getVerticesSortedTopologicallyFromSources()) {
             // General information about the JobVertex at hand:
             String inspectionMsg = "JobVertex: " + vertex.getID().toString() + "\n";
@@ -384,6 +388,10 @@ public class SchedulerService extends AbstractE2DataService {
             logger.finest("(JobVertex-" + vertex.getID().toString() + ").getInvokableClassName(): " +
                     vertex.getInvokableClassName() + "\n");
 
+            // ====================================================================================
+            //   vvv   User's lambda deserialization   vvv
+            // ====================================================================================
+
             inspectionMsg = "";
             if (null != udf && vertex.getConfiguration().contains(driverClassOption)) {
                 final String driverClass = vertex.getConfiguration().getValue(driverClassOption);
@@ -391,9 +399,8 @@ public class SchedulerService extends AbstractE2DataService {
                     MapFunction mapLambda;
                     try (final ObjectInputStream objectIn = new ObjectInputStream(new ByteArrayInputStream(udf))) {
                         mapLambda = (MapFunction) objectIn.readObject();
-                        inspectionMsg += "CKATSAK: Successfully deserialized the Map Lambda from the UDF byte array! (" +
-                                mapLambda.toString() + ")\n";
-                    } catch (Exception e) {
+                        inspectionMsg += "Successfully deserialized the Map Lambda from the UDF byte array: " + mapLambda + "\n";
+                    } catch (final IOException | ClassNotFoundException e) {
                         final StringWriter sw = new StringWriter();
                         inspectionMsg += "Error deserializing the UDF byte array... :\n";
                         e.printStackTrace(new PrintWriter(sw));
@@ -402,12 +409,16 @@ public class SchedulerService extends AbstractE2DataService {
                     logger.finest(inspectionMsg + "\n\n");
                 }
             }
+
+            // ====================================================================================
+            //   ^^^   User's lambda deserialization   ^^^
+            // ====================================================================================
         }
         HaierExecutionGraph.logOffloadability(jobGraph);
 
-        //=========================================================================================
-        //  vvv   User's JAR inspection/manipulation   vvv
-        //=========================================================================================
+        // ========================================================================================
+        //   vvv   User's JAR inspection/manipulation   vvv
+        // ========================================================================================
 
         final List<org.apache.flink.core.fs.Path> jars = new ArrayList<>();
         String userJarsPaths = "User Jars Paths:\n";
@@ -441,42 +452,20 @@ public class SchedulerService extends AbstractE2DataService {
         }
         logger.finest(inspectionMsg + "\n");
 
-        inspectionMsg = "\n";
-        for (org.apache.flink.core.fs.Path path : jars) {
-            inspectionMsg = "* Classes implementing Flink MapFunction in '" + path.getName() + "':\n";
-            try {
-                for (Class<?> clazz : HaierUDFLoader.scanJarFileForMapFunctionClasses(new File(path.getPath()))) {
-                    inspectionMsg += "\t- " + clazz.getCanonicalName() + "\n";
-                }
-            } catch (IOException e) {
-                final StringWriter sw = new StringWriter();
-                inspectionMsg += "\nError scanning for MapFunction classes in '" + path.getPath() + "' ... :\n";
-                e.printStackTrace(new PrintWriter(sw));
-                inspectionMsg += sw.toString() + "";
-            }
+        inspectionMsg = "\n* User-defined classes implementing `MapFunction`:\n";
+        for (Class<?> clazz : HaierUDFLoader.getAllUserDefinedMapFunctions(jobGraph)) {
+            inspectionMsg += "\t- " + clazz.toString() + "\n";
+        }
+        inspectionMsg += "\n* User-defined classes implementing `ReduceFunction`:\n";
+        for (Class<?> clazz : HaierUDFLoader.getAllUserDefinedReduceFunctions(jobGraph)) {
+            inspectionMsg += "\t- " + clazz.toString() + "\n";
         }
         logger.finest(inspectionMsg);
 
-        inspectionMsg = "\n";
-        for (org.apache.flink.core.fs.Path path : jars) {
-            inspectionMsg = "* Classes implementing Flink ReduceFunction in '" + path.getName() + "':\n";
-            try {
-                for (Class<?> clazz : HaierUDFLoader.scanJarFileForReduceFunctionClasses(new File(path.getPath()))) {
-                    inspectionMsg += "\t- " + clazz.getCanonicalName() + "\n";
-                }
-            } catch (IOException e) {
-                final StringWriter sw = new StringWriter();
-                inspectionMsg += "\nError scanning for ReduceFunction classes in '" + path.getPath() + "' ... :\n";
-                e.printStackTrace(new PrintWriter(sw));
-                inspectionMsg += sw.toString() + "";
-            }
-        }
-        logger.finest(inspectionMsg);
+        // ========================================================================================
+        //   ^^^   User's JAR inspection/manipulation   ^^^
+        // ========================================================================================
     }
-
-    //=========================================================================================
-    //  ^^^   User's JAR inspection/manipulation   ^^^
-    //=========================================================================================
 
 }
 
