@@ -1,4 +1,4 @@
-package gr.ntua.ece.cslab.e2datascheduler.util.asm;
+package gr.ntua.ece.cslab.e2datascheduler.ml.featurextraction.asm;
 
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;

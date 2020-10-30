@@ -1,18 +1,18 @@
-package gr.ntua.ece.cslab.e2datascheduler.util;
+package gr.ntua.ece.cslab.e2datascheduler.ml.featurextraction;
 
-import gr.ntua.ece.cslab.e2datascheduler.util.asm.ExamineUDF;
-import gr.ntua.ece.cslab.e2datascheduler.util.asm.TransformUDF;
-import gr.ntua.ece.cslab.e2datascheduler.util.asm.map.AsmClassLoader;
-import gr.ntua.ece.cslab.e2datascheduler.util.asm.map.MiddleMap;
-import gr.ntua.ece.cslab.e2datascheduler.util.asm.map.MiddleMap2;
-import gr.ntua.ece.cslab.e2datascheduler.util.asm.map.MiddleMap3;
-import gr.ntua.ece.cslab.e2datascheduler.util.asm.map.TornadoMap;
-import gr.ntua.ece.cslab.e2datascheduler.util.asm.map.TornadoMap2;
-import gr.ntua.ece.cslab.e2datascheduler.util.asm.map.TornadoMap3;
-import gr.ntua.ece.cslab.e2datascheduler.util.asm.reduce.MiddleReduce;
-import gr.ntua.ece.cslab.e2datascheduler.util.asm.reduce.TornadoReduce;
-import gr.ntua.ece.cslab.e2datascheduler.util.tornadoflink.AccelerationData;
-import gr.ntua.ece.cslab.e2datascheduler.util.tornadoflink.FlinkCompilerInfo;
+import gr.ntua.ece.cslab.e2datascheduler.ml.featurextraction.asm.ExamineUDF;
+import gr.ntua.ece.cslab.e2datascheduler.ml.featurextraction.asm.TransformUDF;
+import gr.ntua.ece.cslab.e2datascheduler.ml.featurextraction.asm.map.AsmClassLoader;
+import gr.ntua.ece.cslab.e2datascheduler.ml.featurextraction.asm.map.MiddleMap;
+import gr.ntua.ece.cslab.e2datascheduler.ml.featurextraction.asm.map.MiddleMap2;
+import gr.ntua.ece.cslab.e2datascheduler.ml.featurextraction.asm.map.MiddleMap3;
+import gr.ntua.ece.cslab.e2datascheduler.ml.featurextraction.asm.map.TornadoMap;
+import gr.ntua.ece.cslab.e2datascheduler.ml.featurextraction.asm.map.TornadoMap2;
+import gr.ntua.ece.cslab.e2datascheduler.ml.featurextraction.asm.map.TornadoMap3;
+import gr.ntua.ece.cslab.e2datascheduler.ml.featurextraction.asm.reduce.MiddleReduce;
+import gr.ntua.ece.cslab.e2datascheduler.ml.featurextraction.asm.reduce.TornadoReduce;
+import gr.ntua.ece.cslab.e2datascheduler.ml.featurextraction.tornadoflink.AccelerationData;
+import gr.ntua.ece.cslab.e2datascheduler.ml.featurextraction.tornadoflink.FlinkCompilerInfo;
 
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.java.typeutils.TupleTypeInfo;
@@ -23,8 +23,8 @@ import org.objectweb.asm.Opcodes;
 
 import java.util.ArrayList;
 
-import static gr.ntua.ece.cslab.e2datascheduler.util.asm.ExamineUDF.setTypeVariablesMap;
-import static gr.ntua.ece.cslab.e2datascheduler.util.asm.ExamineUDF.setTypeVariablesReduce;
+import static gr.ntua.ece.cslab.e2datascheduler.ml.featurextraction.asm.ExamineUDF.setTypeVariablesMap;
+import static gr.ntua.ece.cslab.e2datascheduler.ml.featurextraction.asm.ExamineUDF.setTypeVariablesReduce;
 
 
 /**

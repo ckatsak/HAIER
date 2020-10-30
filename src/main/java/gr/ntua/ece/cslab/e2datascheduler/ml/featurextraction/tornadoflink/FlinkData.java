@@ -1,4 +1,4 @@
-package gr.ntua.ece.cslab.e2datascheduler.util.tornadoflink;
+package gr.ntua.ece.cslab.e2datascheduler.ml.featurextraction.tornadoflink;
 
 import java.util.ArrayList;
 

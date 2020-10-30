@@ -1,8 +1,8 @@
-package gr.ntua.ece.cslab.e2datascheduler.util;
+package gr.ntua.ece.cslab.e2datascheduler.ml.featurextraction;
 
-import gr.ntua.ece.cslab.e2datascheduler.util.asm.map.TornadoMap;
-import gr.ntua.ece.cslab.e2datascheduler.util.tornadoflink.FlinkCompilerInfo;
-import gr.ntua.ece.cslab.e2datascheduler.util.tornadoflink.FlinkData;
+import gr.ntua.ece.cslab.e2datascheduler.ml.featurextraction.asm.map.TornadoMap;
+import gr.ntua.ece.cslab.e2datascheduler.ml.featurextraction.tornadoflink.FlinkCompilerInfo;
+import gr.ntua.ece.cslab.e2datascheduler.ml.featurextraction.tornadoflink.FlinkData;
 
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.java.tuple.Tuple2;

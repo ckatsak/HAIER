@@ -1,4 +1,4 @@
-package gr.ntua.ece.cslab.e2datascheduler.util.asm.reduce;
+package gr.ntua.ece.cslab.e2datascheduler.ml.featurextraction.asm.reduce;
 
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple3;
