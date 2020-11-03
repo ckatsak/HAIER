@@ -12,18 +12,18 @@ import gr.ntua.ece.cslab.e2datascheduler.ml.featurextraction.asm.map.TornadoMap3
 import gr.ntua.ece.cslab.e2datascheduler.ml.featurextraction.asm.reduce.MiddleReduce;
 import gr.ntua.ece.cslab.e2datascheduler.ml.featurextraction.asm.reduce.TornadoReduce;
 import gr.ntua.ece.cslab.e2datascheduler.ml.featurextraction.tornadoflink.AccelerationData;
-//import gr.ntua.ece.cslab.e2datascheduler.ml.featurextraction.tornadoflink.FlinkCompilerInfo;
-
-import uk.ac.manchester.tornado.api.flink.FlinkCompilerInfo;
 
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.java.typeutils.TupleTypeInfo;
+
+import uk.ac.manchester.tornado.api.flink.FlinkCompilerInfo;
 
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import static gr.ntua.ece.cslab.e2datascheduler.ml.featurextraction.asm.ExamineUDF.setTypeVariablesMap;
 import static gr.ntua.ece.cslab.e2datascheduler.ml.featurextraction.asm.ExamineUDF.setTypeVariablesReduce;
@@ -33,6 +33,15 @@ import static gr.ntua.ece.cslab.e2datascheduler.ml.featurextraction.asm.ExamineU
  * TODO(ckatsak): Documentation
  */
 public class TornadoUtil {
+
+    /*
+     * FIXME(ckatsak):
+     *  How is this initialized?
+     *   Initialization takes place at org.apache.flink.runtime.taskmanager.Task's constructor in
+     *   the `flinkTornadoIntegration` branch.
+     *  Used in MapDriver and ChainedMapDriver.
+     */
+    public static HashMap<String, TypeInformation[]> typeInfo = new HashMap<>();
 
 
     // --------------------------------------------------------------------------------------------
