@@ -12,7 +12,9 @@ import gr.ntua.ece.cslab.e2datascheduler.ml.featurextraction.asm.map.TornadoMap3
 import gr.ntua.ece.cslab.e2datascheduler.ml.featurextraction.asm.reduce.MiddleReduce;
 import gr.ntua.ece.cslab.e2datascheduler.ml.featurextraction.asm.reduce.TornadoReduce;
 import gr.ntua.ece.cslab.e2datascheduler.ml.featurextraction.tornadoflink.AccelerationData;
-import gr.ntua.ece.cslab.e2datascheduler.ml.featurextraction.tornadoflink.FlinkCompilerInfo;
+//import gr.ntua.ece.cslab.e2datascheduler.ml.featurextraction.tornadoflink.FlinkCompilerInfo;
+
+import uk.ac.manchester.tornado.api.flink.FlinkCompilerInfo;
 
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.java.typeutils.TupleTypeInfo;
@@ -32,6 +34,26 @@ import static gr.ntua.ece.cslab.e2datascheduler.ml.featurextraction.asm.ExamineU
  */
 public class TornadoUtil {
 
+
+    // --------------------------------------------------------------------------------------------
+
+
+    /*
+     * FIXME(ckatsak): Where should this be initialized?
+     */
+    private static int tupleArrayFieldTotalBytes;
+
+    public static void setTupleArrayFieldTotalBytes(int arrayFieldTotalBytes) {
+        tupleArrayFieldTotalBytes = arrayFieldTotalBytes;
+    }
+
+
+    // --------------------------------------------------------------------------------------------
+
+
+    /*
+     * NOTE(ckatsak): Used in MapDriver, ChainedMapDriver
+     */
     public static TornadoMap transformUDF(String name) {
         try {
             TransformUDF.mapUserClassName = name.replace("class ", "").replace(".", "/");
@@ -64,6 +86,9 @@ public class TornadoUtil {
         return null;
     }
 
+    /*
+     * NOTE(ckatsak): Used in MapDriver, ChainedMapDriver
+     */
     public static TornadoMap2 transformUDF2(String name) {
         try {
             TransformUDF.mapUserClassName = name.replace("class ", "").replace(".", "/");
@@ -96,6 +121,9 @@ public class TornadoUtil {
         return null;
     }
 
+    /*
+     * NOTE(ckatsak): Used in MapDriver, ChainedMapDriver
+     */
     public static TornadoMap3 transformUDF3(String name) {
         try {
             TransformUDF.mapUserClassName = name.replace("class ", "").replace(".", "/");
@@ -128,6 +156,9 @@ public class TornadoUtil {
         return null;
     }
 
+    /*
+     * NOTE(ckatsak): Used in ChainedAllReduceDriver
+     */
     public static TornadoReduce transformReduceUDF(String name) {
         try {
             TransformUDF.redUserClassName = name.replace("class ", "").replace(".", "/");
@@ -158,6 +189,9 @@ public class TornadoUtil {
         return null;
     }
 
+    /*
+     * NOTE(ckatsak): Used in MapDriver, ChainedMapDriver
+     */
     public static int examineTypeInfoForFlinkUDFs(
             TypeInformation inputType,
             TypeInformation returnType,
@@ -481,4 +515,127 @@ public class TornadoUtil {
     //--------------------------------------------------------------------------------------------
 
 
+    /*
+     * NOTE(ckatsak): Used in MapDriver
+     */
+    public static void setTypeVariablesForSecondInput(TypeInformation inputType, FlinkCompilerInfo flinkCompilerInfo) {
+        if (inputType.getClass() == TupleTypeInfo.class) {
+            TupleTypeInfo tinfo = (TupleTypeInfo) inputType;
+            TypeInformation[] tuparray = tinfo.getTypeArray();
+            // examine if fields are tuples, if they are not
+            ArrayList<Class> tupleFieldKindSecondDataSet = new ArrayList<>();
+            ArrayList<Integer> fieldSizesInner = new ArrayList();
+            ArrayList<String> fieldTypesInner = new ArrayList<>();
+
+            int tupleSize = tuparray.length;
+
+            for (int i = 0; i < tuparray.length; i++) {
+                Class typeClass = tuparray[i].getTypeClass();
+                if (typeClass.toString().contains("Double")) {
+                    tupleFieldKindSecondDataSet.add(double.class);
+                    fieldSizesInner.add(8);
+                    fieldTypesInner.add("double");
+                } else if (tuparray[i] instanceof TupleTypeInfo) {
+                    TupleTypeInfo nestedTuple = (TupleTypeInfo) tuparray[i];
+                    TypeInformation[] nestedtuparray = nestedTuple.getTypeArray();
+                    tupleSize += nestedtuparray.length;
+                    for (int j = 0; j < nestedtuparray.length; j++) {
+                        Class nestedTypeClass = nestedtuparray[i].getTypeClass();
+                        if (nestedTypeClass.toString().contains("Double")) {
+                            tupleFieldKindSecondDataSet.add(double.class);
+                            fieldSizesInner.add(8);
+                            fieldTypesInner.add("double");
+                        } else if (nestedtuparray[i] instanceof TupleTypeInfo) {
+                            System.out.println("We can currently support only 2 factor nesting for Tuples!");
+                            return;
+                        } else if (nestedTypeClass.toString().contains("Float")) {
+                            tupleFieldKindSecondDataSet.add(float.class);
+                            fieldSizesInner.add(4);
+                            fieldTypesInner.add("float");
+                        } else if (nestedTypeClass.toString().contains("Long")) {
+                            tupleFieldKindSecondDataSet.add(long.class);
+                            fieldSizesInner.add(8);
+                            fieldTypesInner.add("long");
+                        } else if (nestedTypeClass.toString().contains("Integer")) {
+                            tupleFieldKindSecondDataSet.add(int.class);
+                            fieldSizesInner.add(4);
+                            fieldTypesInner.add("int");
+                        }
+                    }
+                } else if (typeClass.toString().contains("Float")) {
+                    tupleFieldKindSecondDataSet.add(float.class);
+                    fieldSizesInner.add(4);
+                    fieldTypesInner.add("float");
+                } else if (typeClass.toString().contains("Long")) {
+                    tupleFieldKindSecondDataSet.add(long.class);
+                    fieldSizesInner.add(8);
+                    fieldTypesInner.add("long");
+                } else if (typeClass.toString().contains("Integer")) {
+                    tupleFieldKindSecondDataSet.add(int.class);
+                    fieldSizesInner.add(4);
+                    fieldTypesInner.add("int");
+                } else if (typeClass.toString().contains("[D")) {
+                    tupleFieldKindSecondDataSet.add(double.class);
+                    fieldSizesInner.add(8);
+                    fieldTypesInner.add("double");
+                    flinkCompilerInfo.setBroadcastedArrayField(true);
+                    flinkCompilerInfo.setBroadcastedTupleArrayFieldNo(i);
+                }
+
+            }
+            int tupleSizeSecondDataSet = tupleSize;
+            boolean differentTypesInner = false;
+
+            for (int i = 0; i < tupleSize; i++) {
+                for (int j = i + 1; j < tupleSize; j++) {
+                    if (!(fieldSizesInner.get(i).equals(fieldSizesInner.get(j)))) {
+                        differentTypesInner = true;
+                    }
+                }
+            }
+            flinkCompilerInfo.setTupleFieldKindSecondDataSet(tupleFieldKindSecondDataSet);
+            flinkCompilerInfo.setFieldSizesInner(fieldSizesInner);
+            flinkCompilerInfo.setFieldTypesInner(fieldTypesInner);
+            flinkCompilerInfo.setTupleSizeSecondDataSet(tupleSizeSecondDataSet);
+            flinkCompilerInfo.setDifferentTypesInner(differentTypesInner);
+        }
     }
+
+
+    // --------------------------------------------------------------------------------------------
+
+
+    /**
+     * Transforms a long value to its corresponding value in bytes and writes results to array passed.
+     *
+     * NOTE(ckatsak): Used by ReduceDriver
+     *
+     * @param data the long value
+     * @param b The byte array
+     * @param pos The index of the byte array to start writing the bytes
+     */
+    public static void longToByte(long data, byte[] b, int pos) {
+        b[pos] = (byte) ((data >> 0) & 0xff);
+        b[pos + 1] = (byte) ((data >> 8) & 0xff);
+        b[pos + 2] = (byte) ((data >> 16) & 0xff);
+        b[pos + 3] = (byte) ((data >> 24) & 0xff);
+        b[pos + 4] = (byte) ((data >> 32) & 0xff);
+        b[pos + 5] = (byte) ((data >> 40) & 0xff);
+        b[pos + 6] = (byte) ((data >> 48) & 0xff);
+        b[pos + 7] = (byte) ((data >> 56) & 0xff);
+    }
+
+    /**
+     * Transforms an double to a long and passes it to longToByte function, which will return the bytes.
+     *
+     * NOTE(ckatsak): Used by ReduceDriver
+     *
+     * @param data the double value
+     * @param b The byte array
+     * @param pos The index of the byte array to start writing the bytes
+     */
+    public static void doubleToByte(double data, byte[] b, int pos) {
+        longToByte(Double.doubleToRawLongBits(data), b, pos);
+    }
+
+}
