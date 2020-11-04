@@ -188,36 +188,36 @@ public class ChainedMapDriverUtil {
     // --------------------------------------------------------------------------------------------
 
 
-    private abstract static class TypeBytes {
-        protected int bytes = 0;
-        public int getBytes() {
-            return bytes;
-        }
-    }
-
-    private static class TInteger extends TypeBytes {
-        public TInteger() {
-            bytes = 4;
-        }
-    }
-
-    private static class TFloat extends TypeBytes {
-        public TFloat() {
-            bytes = 4;
-        }
-    }
-
-    private static class TLong extends TypeBytes {
-        public TLong() {
-            bytes = 8;
-        }
-    }
-
-    private static class TDouble extends TypeBytes {
-        public TDouble() {
-            bytes = 8;
-        }
-    }
+//    private abstract static class TypeBytes {
+//        protected int bytes = 0;
+//        public int getBytes() {
+//            return bytes;
+//        }
+//    }
+//
+//    private static class TInteger extends TypeBytes {
+//        public TInteger() {
+//            bytes = 4;
+//        }
+//    }
+//
+//    private static class TFloat extends TypeBytes {
+//        public TFloat() {
+//            bytes = 4;
+//        }
+//    }
+//
+//    private static class TLong extends TypeBytes {
+//        public TLong() {
+//            bytes = 8;
+//        }
+//    }
+//
+//    private static class TDouble extends TypeBytes {
+//        public TDouble() {
+//            bytes = 8;
+//        }
+//    }
 
 
     //--------------------------------------------------------------------------------------------
@@ -262,7 +262,7 @@ public class ChainedMapDriverUtil {
         String mapUserClassName = this.mapper.getClass().toString().replace("class ", "").replace(".", "/");
         TornadoMap msk = TornadoUtil.transformUDF(mapUserClassName);
 
-        TypeBytes typeBytes = null;
+//        TypeBytes typeBytes = null;
         FlinkData flinkData = null;
         byte[] outBytes = null;
 
@@ -278,7 +278,7 @@ public class ChainedMapDriverUtil {
                     case "java/lang/Integer": {
                         int[] out = new int[numOfElements];
                         outBytes = new byte[numOfElements * INT_LENGTH];
-                        typeBytes = new TInteger();
+//                        typeBytes = new TInteger();
                         flinkData = new FlinkData(inputByteData, outBytes);
                         createTaskScheduleAndRun(msk, in, out, outBytes, flinkData);
                         break;
@@ -286,7 +286,7 @@ public class ChainedMapDriverUtil {
                     case "java/lang/Double": {
                         double[] out = new double[numOfElements];
                         outBytes = new byte[numOfElements * 8];
-                        typeBytes = new TDouble();
+//                        typeBytes = new TDouble();
                         flinkData = new FlinkData(inputByteData, outBytes);
                         createTaskScheduleAndRun(msk, in, out, outBytes, flinkData);
                         break;
@@ -294,7 +294,7 @@ public class ChainedMapDriverUtil {
                     case "java/lang/Float": {
                         float[] out = new float[numOfElements];
                         outBytes = new byte[numOfElements * 4];
-                        typeBytes = new TFloat();
+//                        typeBytes = new TFloat();
                         flinkData = new FlinkData(inputByteData, outBytes);
                         createTaskScheduleAndRun(msk, in, out, outBytes, flinkData);
                         break;
@@ -302,15 +302,15 @@ public class ChainedMapDriverUtil {
                     case "java/lang/Long": {
                         long[] out = new long[numOfElements];
                         outBytes = new byte[numOfElements * 8];
-                        typeBytes = new TLong();
+//                        typeBytes = new TLong();
                         flinkData = new FlinkData(inputByteData, outBytes);
                         createTaskScheduleAndRun(msk, in, out, outBytes, flinkData);
                         break;
                     }
                 }
-                outBytes = (typeBytes.getBytes() == 4) ? changeOutputEndianess4(outBytes) :  changeOutputEndianess8(outBytes);
-                int numOfElementsRes = outBytes.length / typeBytes.getBytes();
-                AccelerationData acres = new AccelerationData(outBytes, numOfElementsRes, typeBytes.getBytes());
+//                outBytes = (typeBytes.getBytes() == 4) ? changeOutputEndianess4(outBytes) :  changeOutputEndianess8(outBytes);
+//                int numOfElementsRes = outBytes.length / typeBytes.getBytes();
+//                AccelerationData acres = new AccelerationData(outBytes, numOfElementsRes, typeBytes.getBytes());
 //                conf.setAccelerationData(acres);
                 break;
             }
@@ -320,8 +320,8 @@ public class ChainedMapDriverUtil {
                 switch (outOwner) {
                     case "java/lang/Integer": {
                         int[] out = new int[numOfElements];
-                        typeBytes = new TInteger();
                         outBytes = new byte[numOfElements * 4];
+//                        typeBytes = new TInteger();
                         flinkData = new FlinkData(inputByteData, outBytes);
                         createTaskScheduleAndRun(msk, in, out, outBytes, flinkData);
                         break;
@@ -329,7 +329,7 @@ public class ChainedMapDriverUtil {
                     case "java/lang/Double": {
                         double[] out = new double[numOfElements];
                         outBytes = new byte[numOfElements * 8];
-                        typeBytes = new TDouble();
+//                        typeBytes = new TDouble();
                         flinkData = new FlinkData(inputByteData, outBytes);
                         createTaskScheduleAndRun(msk, in, out, outBytes, flinkData);
                         break;
@@ -337,7 +337,7 @@ public class ChainedMapDriverUtil {
                     case "java/lang/Float": {
                         float[] out = new float[numOfElements];
                         outBytes = new byte[numOfElements * 4];
-                        typeBytes = new TFloat();
+//                        typeBytes = new TFloat();
                         flinkData = new FlinkData(inputByteData, outBytes);
                         createTaskScheduleAndRun(msk, in, out, outBytes, flinkData);
                         break;
@@ -345,15 +345,15 @@ public class ChainedMapDriverUtil {
                     case "java/lang/Long": {
                         long[] out = new long[numOfElements];
                         outBytes = new byte[numOfElements * 8];
-                        typeBytes = new TLong();
+//                        typeBytes = new TLong();
                         flinkData = new FlinkData(inputByteData, outBytes);
                         createTaskScheduleAndRun(msk, in, out, outBytes, flinkData);
                         break;
                     }
                 }
-                outBytes = (typeBytes.getBytes() == 4) ? changeOutputEndianess4(outBytes) :  changeOutputEndianess8(outBytes);
-                int numOfElementsRes = outBytes.length / typeBytes.getBytes();
-                AccelerationData acres = new AccelerationData(outBytes, numOfElementsRes, typeBytes.getBytes());
+//                outBytes = (typeBytes.getBytes() == 4) ? changeOutputEndianess4(outBytes) :  changeOutputEndianess8(outBytes);
+//                int numOfElementsRes = outBytes.length / typeBytes.getBytes();
+//                AccelerationData acres = new AccelerationData(outBytes, numOfElementsRes, typeBytes.getBytes());
 //                conf.setAccelerationData(acres);
                 break;
             }
@@ -364,7 +364,7 @@ public class ChainedMapDriverUtil {
                     case "java/lang/Integer": {
                         int[] out = new int[numOfElements];
                         outBytes = new byte[numOfElements * 4];
-                        typeBytes = new TInteger();
+//                        typeBytes = new TInteger();
                         flinkData = new FlinkData(inputByteData, outBytes);
                         createTaskScheduleAndRun(msk, in, out, outBytes, flinkData);
                         break;
@@ -372,7 +372,7 @@ public class ChainedMapDriverUtil {
                     case "java/lang/Double": {
                         double[] out = new double[numOfElements];
                         outBytes = new byte[numOfElements * 8];
-                        typeBytes = new TDouble();
+//                        typeBytes = new TDouble();
                         flinkData = new FlinkData(inputByteData, outBytes);
                         createTaskScheduleAndRun(msk, in, out, outBytes, flinkData);
                         break;
@@ -380,7 +380,7 @@ public class ChainedMapDriverUtil {
                     case "java/lang/Float": {
                         float[] out = new float[numOfElements];
                         outBytes = new byte[numOfElements * 4];
-                        typeBytes = new TFloat();
+//                        typeBytes = new TFloat();
                         flinkData = new FlinkData(inputByteData, outBytes);
                         createTaskScheduleAndRun(msk, in, out, outBytes, flinkData);
                         break;
@@ -388,15 +388,15 @@ public class ChainedMapDriverUtil {
                     case "java/lang/Long": {
                         long[] out = new long[numOfElements];
                         outBytes = new byte[numOfElements * 8];
-                        typeBytes = new TLong();
+//                        typeBytes = new TLong();
                         flinkData = new FlinkData(inputByteData, outBytes);
                         createTaskScheduleAndRun(msk, in, out, outBytes, flinkData);
                         break;
                     }
                 }
-                outBytes = (typeBytes.getBytes() == 4) ? changeOutputEndianess4(outBytes) : changeOutputEndianess8(outBytes);
-                int numOfElementsRes = outBytes.length / typeBytes.getBytes();
-                AccelerationData acres = new AccelerationData(outBytes, numOfElementsRes, typeBytes.getBytes());
+//                outBytes = (typeBytes.getBytes() == 4) ? changeOutputEndianess4(outBytes) : changeOutputEndianess8(outBytes);
+//                int numOfElementsRes = outBytes.length / typeBytes.getBytes();
+//                AccelerationData acres = new AccelerationData(outBytes, numOfElementsRes, typeBytes.getBytes());
 //                conf.setAccelerationData(acres);
                 break;
             }
@@ -407,7 +407,7 @@ public class ChainedMapDriverUtil {
                     case "java/lang/Integer": {
                         int[] out = new int[numOfElements];
                         outBytes = new byte[numOfElements * 4];
-                        typeBytes = new TInteger();
+//                        typeBytes = new TInteger();
                         flinkData = new FlinkData(inputByteData, outBytes);
                         createTaskScheduleAndRun(msk, in, out, outBytes, flinkData);
                         break;
@@ -415,7 +415,7 @@ public class ChainedMapDriverUtil {
                     case "java/lang/Double": {
                         double[] out = new double[numOfElements];
                         outBytes = new byte[numOfElements * 8];
-                        typeBytes = new TDouble();
+//                        typeBytes = new TDouble();
                         flinkData = new FlinkData(inputByteData, outBytes);
                         createTaskScheduleAndRun(msk, in, out, outBytes, flinkData);
                         break;
@@ -423,7 +423,7 @@ public class ChainedMapDriverUtil {
                     case "java/lang/Float": {
                         float[] out = new float[numOfElements];
                         outBytes = new byte[numOfElements * 4];
-                        typeBytes = new TFloat();
+//                        typeBytes = new TFloat();
                         flinkData = new FlinkData(inputByteData, outBytes);
                         createTaskScheduleAndRun(msk, in, out, outBytes, flinkData);
                         break;
@@ -431,15 +431,15 @@ public class ChainedMapDriverUtil {
                     case "java/lang/Long": {
                         long[] out = new long[numOfElements];
                         outBytes = new byte[numOfElements * 8];
-                        typeBytes = new TLong();
+//                        typeBytes = new TLong();
                         flinkData = new FlinkData(inputByteData, outBytes);
                         createTaskScheduleAndRun(msk, in, out, outBytes, flinkData);
                         break;
                     }
                 }
-                outBytes = (typeBytes.getBytes() == 4) ? changeOutputEndianess4(outBytes) : changeOutputEndianess8(outBytes);
-                int numOfElementsRes = outBytes.length / typeBytes.getBytes();
-                AccelerationData acres = new AccelerationData(outBytes, numOfElementsRes, typeBytes.getBytes());
+//                outBytes = (typeBytes.getBytes() == 4) ? changeOutputEndianess4(outBytes) : changeOutputEndianess8(outBytes);
+//                int numOfElementsRes = outBytes.length / typeBytes.getBytes();
+//                AccelerationData acres = new AccelerationData(outBytes, numOfElementsRes, typeBytes.getBytes());
 //                conf.setAccelerationData(acres);
                 break;
             }
@@ -450,7 +450,7 @@ public class ChainedMapDriverUtil {
                     case "java/lang/Integer": {
                         int[] out = new int[numOfElements];
                         outBytes = new byte[numOfElements * 4];
-                        typeBytes = new TInteger();
+//                        typeBytes = new TInteger();
                         flinkData = new FlinkData(inputByteData, outBytes);
                         FlinkCompilerInfo fct0 = new FlinkCompilerInfo();
                         fct0.setStoreJavaKind(int.class);
@@ -458,11 +458,11 @@ public class ChainedMapDriverUtil {
                         AccelerationData acres = examineType(fct0);
                         createTaskScheduleAndRun(msk, in, out, outBytes, flinkData, fct0);
 
-                        outBytes = changeOutputEndianess4(outBytes);
-                        int numOfElementsRes = outBytes.length / typeBytes.getBytes();
-                        acres.setRawData(outBytes);
-                        acres.setInputSize(numOfElementsRes);
-                        acres.setReturnSize(typeBytes.getBytes());
+//                        outBytes = changeOutputEndianess4(outBytes);
+//                        int numOfElementsRes = outBytes.length / typeBytes.getBytes();
+//                        acres.setRawData(outBytes);
+//                        acres.setInputSize(numOfElementsRes);
+//                        acres.setReturnSize(typeBytes.getBytes());
 //                        conf.setAccelerationData(acres);
                         break;
                     }
@@ -481,12 +481,11 @@ public class ChainedMapDriverUtil {
                                 .streamOut(outBytes)
                                 .execute();
 
-                        outBytes = changeOutputEndianess8(outBytes);
-
-                        int numOfElementsRes = outBytes.length / 8;
-                        acres.setRawData(outBytes);
-                        acres.setInputSize(numOfElementsRes);
-                        acres.setReturnSize(8);
+//                        outBytes = changeOutputEndianess8(outBytes);
+//                        int numOfElementsRes = outBytes.length / 8;
+//                        acres.setRawData(outBytes);
+//                        acres.setInputSize(numOfElementsRes);
+//                        acres.setReturnSize(8);
 //                        conf.setAccelerationData(acres);
                         break;
                     }
@@ -512,12 +511,11 @@ public class ChainedMapDriverUtil {
                                 .streamOut(outBytes)
                                 .execute();
 
-                        byte[] outT = changeOutputEndianess4(outBytes);
-
-                        int numOfElementsRes = outT.length / 4;
-                        acres.setRawData(outT);
-                        acres.setInputSize(numOfElementsRes);
-                        acres.setReturnSize(4);
+//                        byte[] outT = changeOutputEndianess4(outBytes);
+//                        int numOfElementsRes = outT.length / 4;
+//                        acres.setRawData(outT);
+//                        acres.setInputSize(numOfElementsRes);
+//                        acres.setReturnSize(4);
 //                        conf.setAccelerationData(acres);
                         break;
                     }
@@ -543,12 +541,11 @@ public class ChainedMapDriverUtil {
                                 .streamOut(outBytes)
                                 .execute();
 
-                        byte[] outT = changeOutputEndianess8(outBytes);
-
-                        int numOfElementsRes = outT.length / 8;
-                        acres.setRawData(outT);
-                        acres.setInputSize(numOfElementsRes);
-                        acres.setReturnSize(8);
+//                        byte[] outT = changeOutputEndianess8(outBytes);
+//                        int numOfElementsRes = outT.length / 8;
+//                        acres.setRawData(outT);
+//                        acres.setInputSize(numOfElementsRes);
+//                        acres.setReturnSize(8);
 //                        conf.setAccelerationData(acres);
                         break;
                     }
@@ -592,24 +589,24 @@ public class ChainedMapDriverUtil {
                                 .streamOut(outBytes)
                                 .execute();
 
-                        int numOfElementsRes = outBytes.length / returnSize;
-                        acres.setRawData(outBytes);
-                        acres.setInputSize(numOfElementsRes);
-                        acres.setReturnSize(returnSize);
+//                        int numOfElementsRes = outBytes.length / returnSize;
+//                        acres.setRawData(outBytes);
+//                        acres.setInputSize(numOfElementsRes);
+//                        acres.setReturnSize(returnSize);
 //                        conf.setAccelerationData(acres);
-                        if (fct0.getReturnArrayField()) {
-                            acres.hasArrayField();
-                            acres.setLengthOfArrayField(accData.getLengthOfArrayField());
-                            acres.setArrayFieldNo(accData.getArrayFieldNo());
-                            int totalB = fct0.getReturnArrayFieldTotalBytes();
-                            for (int i = 0; i < fct0.getFieldSizesRet().size(); i++) {
-                                if (i != arrayPos) {
-                                    totalB += fct0.getFieldSizesRet().get(i);
-                                }
-                            }
-                            acres.setTotalBytes(totalB);
-                            acres.setRecordSize(size);
-                        }
+//                        if (fct0.getReturnArrayField()) {
+//                            acres.hasArrayField();
+//                            acres.setLengthOfArrayField(accData.getLengthOfArrayField());
+//                            acres.setArrayFieldNo(accData.getArrayFieldNo());
+//                            int totalB = fct0.getReturnArrayFieldTotalBytes();
+//                            for (int i = 0; i < fct0.getFieldSizesRet().size(); i++) {
+//                                if (i != arrayPos) {
+//                                    totalB += fct0.getFieldSizesRet().get(i);
+//                                }
+//                            }
+//                            acres.setTotalBytes(totalB);
+//                            acres.setRecordSize(size);
+//                        }
                         break;
                     }
                     case "org/apache/flink/api/java/tuple/Tuple3": {
@@ -638,10 +635,10 @@ public class ChainedMapDriverUtil {
                                 .streamOut(outBytes)
                                 .execute();
 
-                        int numOfElementsRes = outBytes.length / returnSize;
-                        acres.setRawData(outBytes);
-                        acres.setInputSize(numOfElementsRes);
-                        acres.setReturnSize(returnSize);
+//                        int numOfElementsRes = outBytes.length / returnSize;
+//                        acres.setRawData(outBytes);
+//                        acres.setInputSize(numOfElementsRes);
+//                        acres.setReturnSize(returnSize);
 //                        conf.setAccelerationData(acres);
                         break;
                     }
@@ -652,159 +649,166 @@ public class ChainedMapDriverUtil {
             case "org/apache/flink/api/java/tuple/Tuple3": {
                 Tuple3[] in = new Tuple3[numOfElements];
 
-                if (outOwner.equals("java/lang/Integer")) {
-                    int[] out = new int[numOfElements];
-                    FlinkCompilerInfo fct0 = new FlinkCompilerInfo();
-                    fct0.setStoreJavaKind(int.class);
+                switch (outOwner) {
+                    case "java/lang/Integer": {
+                        int[] out = new int[numOfElements];
+                        FlinkCompilerInfo fct0 = new FlinkCompilerInfo();
+                        fct0.setStoreJavaKind(int.class);
 
-                    outBytes = new byte[numOfElements * 4];
-                    FlinkData f = new FlinkData(inputByteData, outBytes);
-                    AccelerationData acres = new AccelerationData();
+                        outBytes = new byte[numOfElements * 4];
+                        FlinkData f = new FlinkData(inputByteData, outBytes);
+                        AccelerationData acres = new AccelerationData();
 
-                    for (String name : TornadoUtil.typeInfo.keySet()) {
-                        if (name.contains(mapper.getClass().toString().replace("class ", ""))) {
-                            examineTypeInfoForFlinkUDFs(TornadoUtil.typeInfo.get(name)[0], TornadoUtil.typeInfo.get(name)[1], fct0, acres);
-                            break;
+                        for (String name : TornadoUtil.typeInfo.keySet()) {
+                            if (name.contains(mapper.getClass().toString().replace("class ", ""))) {
+                                examineTypeInfoForFlinkUDFs(TornadoUtil.typeInfo.get(name)[0], TornadoUtil.typeInfo.get(name)[1], fct0, acres);
+                                break;
+                            }
                         }
+
+                        new TaskSchedule("s0")
+                                .flinkCompilerData(fct0)
+                                .flinkInfo(f)
+                                .task("t0", msk::map, in, out)
+                                .streamOut(outBytes)
+                                .execute();
+
+//                        byte[] outT = changeOutputEndianess4(outBytes);
+//                        int numOfElementsRes = outT.length / 4;
+//                        acres.setRawData(outT);
+//                        acres.setInputSize(numOfElementsRes);
+//                        acres.setReturnSize(4);
+//                        conf.setAccelerationData(acres);
+                        break;
                     }
+                    case "java/lang/Double": {
+                        double[] out = new double[numOfElements];
+                        FlinkCompilerInfo fct0 = new FlinkCompilerInfo();
+                        fct0.setStoreJavaKind(double.class);
 
-                    new TaskSchedule("s0")
-                            .flinkCompilerData(fct0)
-                            .flinkInfo(f)
-                            .task("t0", msk::map, in, out)
-                            .streamOut(outBytes)
-                            .execute();
+                        outBytes = new byte[numOfElements * 8];
+                        FlinkData f = new FlinkData(inputByteData, outBytes);
+                        AccelerationData acres = new AccelerationData();
 
-                    byte[] outT = changeOutputEndianess4(outBytes);
-
-                    int numOfElementsRes = outT.length / 4;
-                    acres.setRawData(outT);
-                    acres.setInputSize(numOfElementsRes);
-                    acres.setReturnSize(4);
-//                    conf.setAccelerationData(acres);
-                } else if (outOwner.equals("java/lang/Double")) {
-                    double[] out = new double[numOfElements];
-                    FlinkCompilerInfo fct0 = new FlinkCompilerInfo();
-                    fct0.setStoreJavaKind(double.class);
-
-                    outBytes = new byte[numOfElements * 8];
-                    FlinkData f = new FlinkData(inputByteData, outBytes);
-                    AccelerationData acres = new AccelerationData();
-
-                    for (String name : TornadoUtil.typeInfo.keySet()) {
-                        if (name.contains(mapper.getClass().toString().replace("class ", ""))) {
-                            examineTypeInfoForFlinkUDFs(TornadoUtil.typeInfo.get(name)[0], TornadoUtil.typeInfo.get(name)[1], fct0, acres);
-                            break;
+                        for (String name : TornadoUtil.typeInfo.keySet()) {
+                            if (name.contains(mapper.getClass().toString().replace("class ", ""))) {
+                                examineTypeInfoForFlinkUDFs(TornadoUtil.typeInfo.get(name)[0], TornadoUtil.typeInfo.get(name)[1], fct0, acres);
+                                break;
+                            }
                         }
+
+                        new TaskSchedule("s0")
+                                .flinkCompilerData(fct0)
+                                .flinkInfo(f)
+                                .task("t0", msk::map, in, out)
+                                .streamOut(outBytes)
+                                .execute();
+
+//                        byte[] outT = changeOutputEndianess8(outBytes);
+//                        int numOfElementsRes = outT.length / 8;
+//                        acres.setRawData(outT);
+//                        acres.setInputSize(numOfElementsRes);
+//                        acres.setReturnSize(8);
+//                        conf.setAccelerationData(acres);
+                        break;
                     }
+                    case "java/lang/Float": {
+                        float[] out = new float[numOfElements];
+                        FlinkCompilerInfo fct0 = new FlinkCompilerInfo();
+                        fct0.setStoreJavaKind(long.class);
 
-                    new TaskSchedule("s0")
-                            .flinkCompilerData(fct0)
-                            .flinkInfo(f)
-                            .task("t0", msk::map, in, out)
-                            .streamOut(outBytes)
-                            .execute();
+                        outBytes = new byte[numOfElements * 4];
+                        FlinkData f = new FlinkData(inputByteData, outBytes);
+                        AccelerationData acres = new AccelerationData();
 
-                    byte[] outT = changeOutputEndianess8(outBytes);
-
-                    int numOfElementsRes = outT.length / 8;
-                    acres.setRawData(outT);
-                    acres.setInputSize(numOfElementsRes);
-                    acres.setReturnSize(8);
-//                    conf.setAccelerationData(acres);
-                } else if (outOwner.equals("java/lang/Float")) {
-                    float[] out = new float[numOfElements];
-                    FlinkCompilerInfo fct0 = new FlinkCompilerInfo();
-                    fct0.setStoreJavaKind(long.class);
-
-                    outBytes = new byte[numOfElements * 4];
-                    FlinkData f = new FlinkData(inputByteData, outBytes);
-                    AccelerationData acres = new AccelerationData();
-
-                    for (String name : TornadoUtil.typeInfo.keySet()) {
-                        if (name.contains(mapper.getClass().toString().replace("class ", ""))) {
-                            examineTypeInfoForFlinkUDFs(TornadoUtil.typeInfo.get(name)[0], TornadoUtil.typeInfo.get(name)[1], fct0, acres);
-                            break;
+                        for (String name : TornadoUtil.typeInfo.keySet()) {
+                            if (name.contains(mapper.getClass().toString().replace("class ", ""))) {
+                                examineTypeInfoForFlinkUDFs(TornadoUtil.typeInfo.get(name)[0], TornadoUtil.typeInfo.get(name)[1], fct0, acres);
+                                break;
+                            }
                         }
+
+                        new TaskSchedule("s0")
+                                .flinkCompilerData(fct0)
+                                .flinkInfo(f)
+                                .task("t0", msk::map, in, out)
+                                .streamOut(outBytes)
+                                .execute();
+
+//                        byte[] outT = changeOutputEndianess4(outBytes);
+//                        int numOfElementsRes = outT.length / 4;
+//                        acres.setRawData(outT);
+//                        acres.setInputSize(numOfElementsRes);
+//                        acres.setReturnSize(4);
+//                        conf.setAccelerationData(acres);
+                        break;
                     }
+                    case "java/lang/Long": {
+                        long[] out = new long[numOfElements];
 
-                    new TaskSchedule("s0")
-                            .flinkCompilerData(fct0)
-                            .flinkInfo(f)
-                            .task("t0", msk::map, in, out)
-                            .streamOut(outBytes)
-                            .execute();
+                        FlinkCompilerInfo fct0 = new FlinkCompilerInfo();
+                        fct0.setStoreJavaKind(long.class);
 
-                    byte[] outT = changeOutputEndianess4(outBytes);
+                        outBytes = new byte[numOfElements * 8];
+                        FlinkData f = new FlinkData(inputByteData, outBytes);
+                        AccelerationData acres = new AccelerationData();
 
-                    int numOfElementsRes = outT.length / 4;
-                    acres.setRawData(outT);
-                    acres.setInputSize(numOfElementsRes);
-                    acres.setReturnSize(4);
-//                    conf.setAccelerationData(acres);
-                } else if (outOwner.equals("java/lang/Long")) {
-                    long[] out = new long[numOfElements];
-
-                    FlinkCompilerInfo fct0 = new FlinkCompilerInfo();
-                    fct0.setStoreJavaKind(long.class);
-
-                    outBytes = new byte[numOfElements * 8];
-                    FlinkData f = new FlinkData(inputByteData, outBytes);
-                    AccelerationData acres = new AccelerationData();
-
-                    for (String name : TornadoUtil.typeInfo.keySet()) {
-                        if (name.contains(mapper.getClass().toString().replace("class ", ""))) {
-                            examineTypeInfoForFlinkUDFs(TornadoUtil.typeInfo.get(name)[0], TornadoUtil.typeInfo.get(name)[1], fct0, acres);
-                            break;
+                        for (String name : TornadoUtil.typeInfo.keySet()) {
+                            if (name.contains(mapper.getClass().toString().replace("class ", ""))) {
+                                examineTypeInfoForFlinkUDFs(TornadoUtil.typeInfo.get(name)[0], TornadoUtil.typeInfo.get(name)[1], fct0, acres);
+                                break;
+                            }
                         }
+
+
+                        new TaskSchedule("s0")
+                                .flinkCompilerData(fct0)
+                                .flinkInfo(f)
+                                .task("t0", msk::map, in, out)
+                                .streamOut(outBytes)
+                                .execute();
+
+//                        byte[] outT = changeOutputEndianess8(outBytes);
+//                        int numOfElementsRes = outT.length / 8;
+//                        acres.setRawData(outT);
+//                        acres.setInputSize(numOfElementsRes);
+//                        acres.setReturnSize(8);
+//                        conf.setAccelerationData(acres);
+                        break;
                     }
+                    case "org/apache/flink/api/java/tuple/Tuple3": {
+                        Tuple3[] out = new Tuple3[numOfElements];
+                        FlinkCompilerInfo fct0 = new FlinkCompilerInfo();
 
+                        int returnSize = 0;
+                        AccelerationData acres = new AccelerationData();
 
-                    new TaskSchedule("s0")
-                            .flinkCompilerData(fct0)
-                            .flinkInfo(f)
-                            .task("t0", msk::map, in, out)
-                            .streamOut(outBytes)
-                            .execute();
-
-                    byte[] outT = changeOutputEndianess8(outBytes);
-
-                    int numOfElementsRes = outT.length / 8;
-                    acres.setRawData(outT);
-                    acres.setInputSize(numOfElementsRes);
-                    acres.setReturnSize(8);
-//                    conf.setAccelerationData(acres);
-                } else if (outOwner.equals("org/apache/flink/api/java/tuple/Tuple3")) {
-                    Tuple3[] out = new Tuple3[numOfElements];
-                    FlinkCompilerInfo fct0 = new FlinkCompilerInfo();
-
-                    int returnSize = 0;
-                    AccelerationData acres = new AccelerationData();
-
-                    for (String name : TornadoUtil.typeInfo.keySet()) {
-                        if (name.contains(mapper.getClass().toString().replace("class ", ""))) {
-                            returnSize = examineTypeInfoForFlinkUDFs(TornadoUtil.typeInfo.get(name)[0], TornadoUtil.typeInfo.get(name)[1], fct0, acres);
-                            break;
+                        for (String name : TornadoUtil.typeInfo.keySet()) {
+                            if (name.contains(mapper.getClass().toString().replace("class ", ""))) {
+                                returnSize = examineTypeInfoForFlinkUDFs(TornadoUtil.typeInfo.get(name)[0], TornadoUtil.typeInfo.get(name)[1], fct0, acres);
+                                break;
+                            }
                         }
+                        outBytes = new byte[numOfElements * returnSize];
+
+                        TornadoMap3 msk3 = transformUDF3(mapUserClassName);
+
+                        FlinkData f = new FlinkData(inputByteData, outBytes);
+
+                        new TaskSchedule("s0")
+                                .flinkCompilerData(fct0)
+                                .flinkInfo(f)
+                                .task("t0", msk3::map, in, out)
+                                .streamOut(outBytes)
+                                .execute();
+
+//                        int numOfElementsRes = outBytes.length / returnSize;
+//                        acres.setRawData(outBytes);
+//                        acres.setInputSize(numOfElementsRes);
+//                        acres.setReturnSize(returnSize);
+//                        conf.setAccelerationData(acres);
+                        break;
                     }
-                    outBytes = new byte[numOfElements * returnSize];
-
-                    TornadoMap3 msk3 = transformUDF3(mapUserClassName);
-
-                    FlinkData f = new FlinkData(inputByteData, outBytes);
-
-                    new TaskSchedule("s0")
-                            .flinkCompilerData(fct0)
-                            .flinkInfo(f)
-                            .task("t0", msk3::map, in, out)
-                            .streamOut(outBytes)
-                            .execute();
-
-                    int numOfElementsRes = outBytes.length / returnSize;
-                    acres.setRawData(outBytes);
-                    acres.setInputSize(numOfElementsRes);
-                    acres.setReturnSize(returnSize);
-//                    conf.setAccelerationData(acres);
                 }
 
                 break;
@@ -836,10 +840,10 @@ public class ChainedMapDriverUtil {
                             .streamOut(outBytes)
                             .execute();
 
-                    int numOfElementsRes = outBytes.length / returnSize;
-                    acres.setRawData(outBytes);
-                    acres.setInputSize(numOfElementsRes);
-                    acres.setReturnSize(returnSize);
+//                    int numOfElementsRes = outBytes.length / returnSize;
+//                    acres.setRawData(outBytes);
+//                    acres.setInputSize(numOfElementsRes);
+//                    acres.setReturnSize(returnSize);
 //                    conf.setAccelerationData(acres);
                 } else if (outOwner.equals("org/apache/flink/api/java/tuple/Tuple4")) {
                     Tuple4[] out = new Tuple4[numOfElements];
@@ -863,10 +867,10 @@ public class ChainedMapDriverUtil {
                             .streamOut(outBytes)
                             .execute();
 
-                    int numOfElementsRes = outBytes.length / returnSize;
-                    acres.setRawData(outBytes);
-                    acres.setInputSize(numOfElementsRes);
-                    acres.setReturnSize(returnSize);
+//                    int numOfElementsRes = outBytes.length / returnSize;
+//                    acres.setRawData(outBytes);
+//                    acres.setInputSize(numOfElementsRes);
+//                    acres.setReturnSize(returnSize);
 //                    conf.setAccelerationData(acres);
                 }
                 break;
