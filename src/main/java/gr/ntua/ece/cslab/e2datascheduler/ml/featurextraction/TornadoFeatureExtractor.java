@@ -17,6 +17,11 @@ import org.apache.flink.configuration.Configuration;
 import org.apache.flink.runtime.jobgraph.JobGraph;
 import org.apache.flink.runtime.jobgraph.JobVertex;
 
+import uk.ac.manchester.tornado.api.TaskSchedule;
+import uk.ac.manchester.tornado.api.common.Access;
+import uk.ac.manchester.tornado.api.common.TornadoDevice;
+import uk.ac.manchester.tornado.api.runtime.TornadoRuntime;
+
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
@@ -184,9 +189,17 @@ public class TornadoFeatureExtractor {
             throw new IllegalArgumentException("Parameter 'kernelName' cannot be null");
         }
 
-        //
-        // TODO: TornadoVM's TaskSchedule stuff
-        //
+        // Use TornadoVM to extract code features from the pre-compiled kernel into a file in the local filesystem
+        new TaskSchedule("s0")
+                .prebuiltTask("t0",
+                        kernelName.split(".")[0],
+                        TornadoFeatureExtractor.precompKernelsFilePath + kernelName,
+                        new Object[] {},
+                        new Access[] {},
+                        TornadoRuntime.getTornadoRuntime().getDriver(0).getDevice(0),
+                        new int[] { 0 })
+                .streamOut(new Object())
+                .execute();
 
         // Parse all TornadoFeatureVectors from the output on the local filesystem...
         final List<TornadoFeatureVector> allTornadoFeatureVectors;

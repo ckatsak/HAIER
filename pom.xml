@@ -19,7 +19,16 @@
         <moea.version>2.12</moea.version>
         <jetty.version>9.3.27.v20190418</jetty.version>
         <flink.version>1.11.1</flink.version>
+        <tornado.version>0.8</tornado.version>
     </properties>
+
+    <!-- TornadoVM repository -->
+    <repositories>
+        <repository>
+            <id>universityOfManchester-graal</id>
+            <url>https://raw.githubusercontent.com/beehive-lab/tornado/maven-tornadovm</url>
+        </repository>
+    </repositories>
 
     <dependencies>
         <dependency> <!-- Unused declared dependency -->
@@ -148,6 +157,18 @@
 <!--            <scope>compile</scope>-->
 <!--        </dependency>-->
         <!-- ... and they would need to go on until all of them are included.. -->
+
+        <!-- TornadoVM -->
+        <dependency>
+            <groupId>tornado</groupId>
+            <artifactId>tornado-api</artifactId>
+            <version>${tornado.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>tornado</groupId>
+            <artifactId>tornado-matrices</artifactId>
+            <version>${tornado.version}</version>
+        </dependency>
 
 
     </dependencies>
