@@ -1,5 +1,5 @@
 ##
-## ckatsak, Mon Oct 26 23:35:00 EET 2020
+## ckatsak, Tue Feb  9 19:53:43 EET 2021
 ##
 MVN ?= /opt/apache-maven-3.6.3/bin/mvn
 JAVA_HOME ?= /opt/ckatsak/jdk-jvmci/graal-jvmci-8/openjdk1.8.0_265/linux-amd64/product
@@ -24,6 +24,9 @@ run-forked: ejh  ### jetty-mvn-plugin-fork
 run-jvm: ejh  ### run-fatjar-on-jvm
 	-$(JAVA_HOME)/bin/java \
 		-jar ./target/scheduler-jar-with-dependencies.jar
+
+tornado: ejh  ### run-fatjar-with-tornado
+	-tornado -jar ./target/scheduler-jar-with-dependencies.jar
 
 fatjar: ejh  ### fat-executable-jar
 	$(MVN) clean package assembly:single
