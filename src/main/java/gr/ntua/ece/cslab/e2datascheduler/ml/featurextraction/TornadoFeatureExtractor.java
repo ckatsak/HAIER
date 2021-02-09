@@ -48,6 +48,7 @@ public class TornadoFeatureExtractor {
     private static final ResourceBundle resourceBundle = ResourceBundle.getBundle("config");
     private static final String virtualDevicesFilePath = resourceBundle.getString("tornado.device.desc.path");
     private static final String featuresOutputFilePath = resourceBundle.getString("tornado.features.dump.path");
+    private static final String precompKernelsFilePath = resourceBundle.getString("tornado.precompiled.kernels.path");
 
     /**
      * A {@link HaierUDFLoader} to allow dynamically loading arbitrary classes from users' JARs
@@ -112,6 +113,103 @@ public class TornadoFeatureExtractor {
         this.reverseDeviceMapping = TornadoFeatureExtractor.createReverseDeviceMapping(this.deviceMapping);
 
         this.featuresMap = new HashMap<>();
+    }
+
+
+    // --------------------------------------------------------------------------------------------
+
+
+    public synchronized Map<JobVertex, Map<HwResource, List<TornadoFeatureVector>>> extractFrom(
+            final JobGraph jobGraph
+    ) throws IOException {
+        for (JobVertex jobVertex : jobGraph.getVerticesSortedTopologicallyFromSources()) {
+            if (!HaierExecutionGraph.isComputational(jobVertex)) {
+                    logger.finest("Skipping JobVertex '" + jobVertex.getID().toString() + "' (named '" +
+                        jobVertex.getName() + "') as non-computational");
+                continue;
+            }
+            this.featuresMap.put(jobVertex, this.preCompiledJobVertex(jobVertex));
+        }
+        return this.featuresMap;
+    }
+
+    private Map<HwResource, List<TornadoFeatureVector>> preCompiledJobVertex(final JobVertex jobVertex)
+            throws IOException {
+        logger.finest("Examining pre-compiled JobVertex '" + jobVertex.getID().toString() + "' (named '" +
+                jobVertex.getName() + "')...");
+
+        final Configuration config = jobVertex.getConfiguration();
+        final ConfigOption<Integer> chainingNumOption = ConfigOptions
+                .key("chaining.num")
+                .defaultValue(0);
+        final int chainingNum = config.getInteger(chainingNumOption);
+
+        // In all cases, initialize/allocate the Map entry for the current JobVertex.
+        final Map<HwResource, List<TornadoFeatureVector>> vertexFeatureVectors = new HashMap<>();
+        this.featuresMap.put(jobVertex, vertexFeatureVectors);
+        for (Map.Entry<HwResource, TornadoVirtualDevice> deviceMappingPair : this.deviceMapping.entrySet()) {
+            vertexFeatureVectors.put(deviceMappingPair.getKey(), new ArrayList<>(chainingNum + 1));
+        }
+
+        final String[] operators = jobVertex.getName().split(" -> ");
+        for (String operator : operators) {
+            final String kernelName;
+            if (operator.contains("SparkWorksAllReduce.java:73")) {
+                kernelName = "prebuilt-sparkworks-reduce-average.cl";
+            } else if (operator.contains("SparkWorksAllReduce.java:78")) {
+                kernelName = "prebuilt-sparkworks-reduce-max.cl";
+            } else if (operator.contains("SparkWorksAllReduce.java:79")) {
+                kernelName = "prebuilt-sparkworks-reduce-sum.cl";
+            } else if (operator.contains("SparkWorksAllReduce.java:80")) {
+                kernelName = "prebuilt-sparkworks-reduce-min.cl";
+            } else if (operator.contains("ExusFlinkTornado.java:47")) {
+                kernelName = "prebuilt-exus-map-reduction.cl";
+            } else if (operator.contains("ExusFlinkTornado.java:48")) {
+                kernelName = "prebuilt-exus-reduction-UpdateAccum.cl";
+            } else {
+                logger.warning("Unknown Operator named '" + operator + "' is not supported in this execution mode");
+                continue;
+            }
+            this.preCompiledOperator(vertexFeatureVectors, kernelName);
+        }
+        return vertexFeatureVectors;
+    }
+
+    private void preCompiledOperator(
+            final Map<HwResource, List<TornadoFeatureVector>> vertexFeatureVectors,
+            final String kernelName
+    ) throws IOException {
+        if (null == kernelName) {
+            logger.severe("Parameter 'kernelName' cannot be null");
+            throw new IllegalArgumentException("Parameter 'kernelName' cannot be null");
+        }
+
+        //
+        // TODO: TornadoVM's TaskSchedule stuff
+        //
+
+        // Parse all TornadoFeatureVectors from the output on the local filesystem...
+        final List<TornadoFeatureVector> allTornadoFeatureVectors;
+        try {
+            allTornadoFeatureVectors = TornadoFeatureExtractor.parseTornadoFeatureVectors(
+                    TornadoFeatureExtractor.featuresOutputFilePath
+            );
+        } catch (final IOException e) {
+            logger.log(Level.SEVERE, "Failed to parseTornadoFeatureVectors() for pre-compiled kernel '" + kernelName +
+                    "':" + e.getMessage(), e);
+            throw e;
+        }
+        // ...group them by the HwResource that each of them refers to...
+        final Map<HwResource, List<TornadoFeatureVector>> tornadoFeatureVectorsByHwResource =
+                this.groupFeaturesByHwResource(allTornadoFeatureVectors);
+        // ...combine them to create the final Map for the operator...
+        final Map<HwResource, TornadoFeatureVector> results = this.combineFeatureVectors(tornadoFeatureVectorsByHwResource);
+        // ...and insert them to the Map for the JobVertex
+        for (Map.Entry<HwResource, TornadoFeatureVector> deviceFeatureVectorPair : results.entrySet()) {
+            vertexFeatureVectors
+                    .get(deviceFeatureVectorPair.getKey())
+                    .add(deviceFeatureVectorPair.getValue());
+        }
     }
 
 
