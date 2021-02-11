@@ -52,8 +52,8 @@ public class TornadoFeatureCache implements FeatureCache {
         Map<JobVertex, Map<HwResource, List<TornadoFeatureVector>>> cacheEntryMapTemp;
         try {
             cacheEntryMapTemp = new TornadoFeatureExtractor(devices)
-                    .extractFrom(jobGraph, this.getClass().getClassLoader());
-        } catch (final IOException | ClassNotFoundException e) {
+                    .extractFrom(jobGraph);
+        } catch (final IOException e) {
             // FIXME(ckatsak): Bubble it up?
             logger.log(Level.SEVERE, e.getMessage(), e);
             throw e;

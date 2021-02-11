@@ -26,7 +26,12 @@ run-jvm: ejh  ### run-fatjar-on-jvm
 		-jar ./target/scheduler-jar-with-dependencies.jar
 
 tornado: ejh  ### run-fatjar-with-tornado
-	-tornado -jar ./target/scheduler-jar-with-dependencies.jar
+	-tornado \
+		-Dtornado.virtual.device=True \
+		-Dtornado.device.desc=/opt/ckatsak/tmp/virtual_devices.json \
+		-Dtornado.feature.extraction=True \
+		-Dtornado.features.dump.dir=/opt/ckatsak/tmp/latest_features.json \
+		-jar ./target/scheduler-jar-with-dependencies.jar
 
 fatjar: ejh  ### fat-executable-jar
 	$(MVN) clean package assembly:single

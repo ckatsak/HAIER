@@ -158,6 +158,7 @@ public class TornadoFeatureExtractor {
 
         final String[] operators = jobVertex.getName().split(" -> ");
         for (String operator : operators) {
+            logger.finest("Examining operator '" + operator + "'...");
             final String kernelName;
             if (operator.contains("SparkWorksAllReduce.java:73")) {
                 kernelName = "prebuilt-sparkworks-reduce-average.cl";
@@ -189,6 +190,8 @@ public class TornadoFeatureExtractor {
             throw new IllegalArgumentException("Parameter 'kernelName' cannot be null");
         }
 
+        logger.finest("Setting up TornadoVM TaskSchedule for kernel '" + kernelName + "' at " +
+                TornadoFeatureExtractor.precompKernelsFilePath + kernelName + " ...");
         // Use TornadoVM to extract code features from the pre-compiled kernel into a file in the local filesystem
         new TaskSchedule("s0")
                 .prebuiltTask("t0",
@@ -200,6 +203,8 @@ public class TornadoFeatureExtractor {
                         new int[] { 0 })
                 .streamOut(new Object())
                 .execute();
+        logger.finest("Completed TornadoVM TaskSchedule for kernel '" + kernelName + "' at " +
+                TornadoFeatureExtractor.precompKernelsFilePath + kernelName + " !");
 
         // Parse all TornadoFeatureVectors from the output on the local filesystem...
         final List<TornadoFeatureVector> allTornadoFeatureVectors;
@@ -586,7 +591,7 @@ public class TornadoFeatureExtractor {
             } else if (virtualDeviceType.endsWith("cpu")) {
                 // In the case of a CPU, prepend the number of cores to the standard (in YARN) "vcores" name.
                 virtualDeviceTransformedNames.put(
-                        virtualDevice.getAvailableProcessors() + "-vcores",
+                        8 + "-vcores",
                         virtualDevice
                 );
             } else {
