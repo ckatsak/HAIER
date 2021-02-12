@@ -1,14 +1,12 @@
 package gr.ntua.ece.cslab.e2datascheduler.ml.impl;
 
 import gr.ntua.ece.cslab.e2datascheduler.beans.cluster.HwResource;
-import gr.ntua.ece.cslab.e2datascheduler.beans.features.TornadoFeatureVectorBean;
 import gr.ntua.ece.cslab.e2datascheduler.beans.ml.InferenceServiceRequest;
-import gr.ntua.ece.cslab.e2datascheduler.ml.featurextraction.TornadoFeatureVector;
+import gr.ntua.ece.cslab.e2datascheduler.beans.ml.InferenceSvcRequest;
 import gr.ntua.ece.cslab.e2datascheduler.graph.ScheduledJobVertex;
 import gr.ntua.ece.cslab.e2datascheduler.ml.Model;
+import gr.ntua.ece.cslab.e2datascheduler.ml.featurextraction.TornadoFeatureVector;
 import gr.ntua.ece.cslab.e2datascheduler.util.HaierCacheException;
-
-import org.apache.flink.runtime.jobgraph.JobVertex;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -30,35 +28,15 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
-/**
- * TODO(ckatsak): Documentation
- */
-public class TornadoModel extends Model {
+public class EvalModel extends Model {
 
-    private static final Logger logger = Logger.getLogger(TornadoModel.class.getCanonicalName());
+    private static final Logger logger = Logger.getLogger(EvalModel.class.getCanonicalName());
 
     public static final ResourceBundle resourceBundle = ResourceBundle.getBundle("config");
     private static final String INFERENCE_SVC_URL = resourceBundle.getString("inference.svc.url");
 
     private final PredictionCache execTimePredictionCache = new PredictionCache();
     private final PredictionCache powerConsPredictionCache = new PredictionCache();
-
-
-    // --------------------------------------------------------------------------------------------
-
-
-    /**
-     * Empty all prediction caches, getting ready to process a new {@link org.apache.flink.runtime.jobgraph.JobGraph}.
-     */
-    public void emptyPredictionCaches() {
-        this.execTimePredictionCache.clear();
-        this.powerConsPredictionCache.clear();
-        logger.finer("Prediction caches emptied!");
-    }
-
-
-    // --------------------------------------------------------------------------------------------
-
 
     /**
      * Loads a model from disk.
@@ -67,7 +45,7 @@ public class TornadoModel extends Model {
      */
     @Override
     public void load(final String path) {
-        // FIXME(ckatsak): Maybe here initialize HTTP client to @kbitsak 's inference endpoint?
+        logger.finest(EvalModel.class.getCanonicalName() + ".load(\"" + path + "\") was called...");
     }
 
     /**
@@ -77,13 +55,14 @@ public class TornadoModel extends Model {
      * @param objective          The objective to make the prediction for
      * @param device             The {@link HwResource} allocated for the underlying {@link JobVertex}
      * @param scheduledJobVertex The {@link ScheduledJobVertex} that represents the {@link JobVertex} to be executed
-     * @return The predicted value for the objective
+     * @return The predicted value for the provided objective
      */
     @Override
     public double predict(
             final String objective,
             final HwResource device,
-            final ScheduledJobVertex scheduledJobVertex) {
+            final ScheduledJobVertex scheduledJobVertex
+    ) {
         if (null == device) {
             throw new IllegalArgumentException("Parameter 'device' cannot be null");
         }
@@ -92,33 +71,22 @@ public class TornadoModel extends Model {
         }
         switch (objective) {
             case "execTime":
-                return this.predictExecTime(device, scheduledJobVertex);
+                return this.predictObjective(objective, this.execTimePredictionCache, device, scheduledJobVertex);
             case "powerCons":
-                return this.predictPowerCons(device, scheduledJobVertex);
+                return this.predictObjective(objective, this.powerConsPredictionCache, device, scheduledJobVertex);
             default:
-                logger.warning("Unknown objective '" + objective + "'; panicking...");
+                logger.severe("Unknown objective '" + objective + "'; panicking...");
                 throw new RuntimeException("Unknown objective '" + objective + "'");
         }
     }
 
-
-    // --------------------------------------------------------------------------------------------
-
-
     /**
-     * Make a prediction for the given objective and the provided {@link ScheduledJobVertex} (actually,
-     * its underlying {@link JobVertex}) on the given {@code device} (i.e., {@link HwResource}), also
-     * using (to read or update) the provided {@link PredictionCache}.
      *
-     * First, there is an attempt to retrieve the prediction from the local cache. If that fails, the
-     * ML inference microservice is queried for all operators in the {@link JobVertex} at hand, the
-     * partial results are combined into a single predicted value, which is also cached for future use.
-     *
-     * @param objective          The objective to predict
-     * @param predictionCache    The {@link PredictionCache} to be used
-     * @param device             The {@link HwResource} that the {@link ScheduledJobVertex} is assigned on
-     * @param scheduledJobVertex The {@link ScheduledJobVertex} at hand
-     * @return The predicted value of the objective
+     * @param objective
+     * @param predictionCache
+     * @param device
+     * @param scheduledJobVertex
+     * @return
      */
     private double predictObjective(
             final String objective,
@@ -157,107 +125,49 @@ public class TornadoModel extends Model {
         return ret;
     }
 
-
     /**
-     * Make a prediction for the execution time of the provided {@link ScheduledJobVertex} (actually,
-     * its underlying {@link JobVertex}) on the given {@code device} (i.e., {@link HwResource}).
      *
-     * First, there is an attempt to retrieve the prediction from the local cache. If that fails, the
-     * ML inference microservice is queried for all operators in the {@link JobVertex} at hand, the
-     * partial results are combined into a single predicted value, which is also cached for future use.
-     *
-     * @param device             The {@link HwResource} that the {@link ScheduledJobVertex} is assigned on
-     * @param scheduledJobVertex The {@link ScheduledJobVertex} at hand
-     * @return The predicted execution time
-     */
-    private double predictExecTime(final HwResource device, final ScheduledJobVertex scheduledJobVertex) {
-        return this.predictObjective("execTime", this.execTimePredictionCache, device, scheduledJobVertex);
-    }
-
-    /**
-     * Make a prediction for the power consumption of the provided {@link ScheduledJobVertex} (actually,
-     * its underlying {@link JobVertex}) on the given {@code device} (i.e., {@link HwResource}).
-     *
-     * First, there is an attempt to retrieve the prediction from the local cache. If that fails, the
-     * ML inference microservice is queried for all operators in the {@link JobVertex} at hand, the
-     * partial results are combined into a single predicted value, which is also cached for future use.
-     *
-     * @param device             The {@link HwResource} that the {@link ScheduledJobVertex} is assigned on
-     * @param scheduledJobVertex The {@link ScheduledJobVertex} at hand
-     * @return The predicted execution time
-     */
-    private double predictPowerCons(final HwResource device, final ScheduledJobVertex scheduledJobVertex) {
-        return this.predictObjective("powerCons", this.powerConsPredictionCache, device, scheduledJobVertex);
-    }
-
-
-    // --------------------------------------------------------------------------------------------
-
-
-    /**
-     * <pre>
-     * FIXME(ckatsak): Implementation?
-     *  - queryModel() for each TornadoFeatureVector
-     *  - return the synthesis of the responses; probably just a sum, for both objectives (?)
-     * </pre>
-     *
-     * Query the ML inference microservice over the network to retrieve one prediction per operator present in
-     * the examined {@link JobVertex} and combine the responses (i.e., multiple predicted values) into a single
-     * predicted value for the given objective.
-     *
-     * @param objective       The objective to query for
-     * @param device          The device (i.e., {@link HwResource}) to query for
-     * @param tornadoFeatures A {@link List} of {@link TornadoFeatureVector} (one per operator in the examined
-     *                        {@link JobVertex}), which serve as input for the ML inference microservice
-     * @return The combined, final predicted value for the given objective
+     * @param objective
+     * @param device
+     * @param tornadoFeatures
+     * @return
      */
     private double inferenceFromNetwork(
             final String objective,
             final HwResource device,
             final List<TornadoFeatureVector> tornadoFeatures) {
-        logger.finest("Inferring from network for objective '" + objective + "', device '" + device + "' and " +
-                tornadoFeatures);
         final double[] upstreamResponses = new double[tornadoFeatures.size()];
         for (int i = 0; i < tornadoFeatures.size(); i++) {
-            upstreamResponses[i] = TornadoModel.queryModel(objective, device, tornadoFeatures.get(i));
+            upstreamResponses[i] = EvalModel.queryModel(objective, device, tornadoFeatures.get(i));
         }
         return this.combinePredictedValues(upstreamResponses);
     }
 
     /**
-     * Combine multiple responses of the inference microservice (due to the presence of multiple operators within a
-     * single {@link JobVertex}) into a single value.
-     * This is just a summation for now.
      *
-     * @param upstreamResponses The responses of the inference microservice
-     * @return The final value produced by the synthesis
+     * @param upstreamResponses
+     * @return
      */
     private double combinePredictedValues(final double[] upstreamResponses) {
         return Arrays.stream(upstreamResponses).sum();
     }
 
     /**
-     * <pre>
-     * TODO(ckatsak):
-     *  - Fix this ugly, quick & dirty exception handling that just blows everything up..
-     * </pre>
      *
-     * Query the ML inference microservice for one specific prediction over the network.
-     *
-     * @param objective       The objective to query for
-     * @param device          The device (i.e., {@link HwResource}) to query for
-     * @param tornadoFeatures The input code features to query for
-     * @return ML inference microservice's response to the query
+     * @param objective
+     * @param device
+     * @param tornadoFeatures
+     * @return
      */
     private static double queryModel(
             final String objective,
             final HwResource device,
             final TornadoFeatureVector tornadoFeatures) {
         // Create a new inference service request...
-        final InferenceServiceRequest inferenceServiceRequest = new InferenceServiceRequest();
+        final InferenceSvcRequest inferenceServiceRequest = new InferenceSvcRequest();
         inferenceServiceRequest.setObjective(objective);
-        inferenceServiceRequest.setDevice(device);
-        inferenceServiceRequest.setTornadoFeatures(tornadoFeatures);
+        inferenceServiceRequest.setDevice(device.getName());
+        inferenceServiceRequest.setKernel(tornadoFeatures.getKernelID());
         // ...and marshall it into a JSON string...
         final ObjectMapper objectMapper = new ObjectMapper();
         final String jsonString;
@@ -328,21 +238,6 @@ public class TornadoModel extends Model {
         }
         // ...and return it.
         return predictedValue;
-    }
-
-
-    // --------------------------------------------------------------------------------------------
-
-
-    // NOTE(ckatsak): Quick & dirty HTTP POST test
-    public static void main(String[] args) {
-        final HwResource r1 = new HwResource();
-        r1.setName("uber-gpu");
-        r1.setHost("gold2");
-        final TornadoFeatureVector tornadoFeatureVector = new TornadoFeatureVector(new TornadoFeatureVectorBean());
-
-        final double predictedValue = TornadoModel.queryModel("execTime", r1, tornadoFeatureVector);
-        System.out.println(predictedValue);
     }
 
 }

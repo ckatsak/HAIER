@@ -8,7 +8,9 @@ import gr.ntua.ece.cslab.e2datascheduler.graph.ScheduledJobVertex;
 import gr.ntua.ece.cslab.e2datascheduler.ml.Model;
 import gr.ntua.ece.cslab.e2datascheduler.ml.featurextraction.FeatureCache;
 import gr.ntua.ece.cslab.e2datascheduler.ml.featurextraction.cache.DummyCSLabFeatureCache;
+import gr.ntua.ece.cslab.e2datascheduler.ml.featurextraction.cache.EvalFeatureCache;
 import gr.ntua.ece.cslab.e2datascheduler.ml.featurextraction.cache.TornadoFeatureCache;
+import gr.ntua.ece.cslab.e2datascheduler.ml.impl.EvalModel;
 import gr.ntua.ece.cslab.e2datascheduler.ml.impl.TornadoModel;
 import gr.ntua.ece.cslab.e2datascheduler.optimizer.nsga.exhaustivetimeevaluation.ExhaustiveEvaluation;
 import gr.ntua.ece.cslab.e2datascheduler.optimizer.nsga.layeredtimeevaluation.LayeredEvaluation;
@@ -150,12 +152,9 @@ public class NSGAIIHaierPlanning extends AbstractProblem {
         }
 
         if (this.mlModel instanceof TornadoModel) {
-            try {
-                this.featureCache = new TornadoFeatureCache(this.jobGraph, this.devices);
-            } catch (final IOException | ClassNotFoundException e) {
-                logger.log(Level.SEVERE, "Failed to initialize TornadoFeatureCache: " + e.getMessage(), e);
-                throw e;
-            }
+            this.featureCache = new TornadoFeatureCache(this.jobGraph, this.devices);
+        } else if (this.mlModel instanceof EvalModel) {
+            this.featureCache = new EvalFeatureCache(this.jobGraph, this.devices);
         } else {
             this.featureCache = new DummyCSLabFeatureCache(this.jobGraph, this.devices);
         }
@@ -295,11 +294,13 @@ public class NSGAIIHaierPlanning extends AbstractProblem {
         double totalConsumption = 0.0d;
 
         for (ScheduledJobVertex scheduledJobVertex : haierExecutionGraph.getScheduledJobVertices()) {
-            totalConsumption += this.mlModel.predict(
-                    "powerCons",
-                    scheduledJobVertex.getAssignedResource(),
-                    scheduledJobVertex
-            );
+            // Only query the model for computational JobVertices
+            totalConsumption += HaierExecutionGraph.isComputational(scheduledJobVertex) ?
+                    this.mlModel.predict(
+                            "powerCons",
+                            scheduledJobVertex.getAssignedResource(),
+                            scheduledJobVertex)
+                    : 0;
         }
 
         return totalConsumption;

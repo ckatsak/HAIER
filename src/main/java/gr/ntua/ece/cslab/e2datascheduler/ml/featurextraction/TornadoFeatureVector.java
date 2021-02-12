@@ -11,7 +11,13 @@ import java.util.List;
  */
 public class TornadoFeatureVector {
 
+    private final String kernelID;
     private final TornadoFeatureVectorBean bean;
+
+    public TornadoFeatureVector(final String kernelID) {
+        this.kernelID = kernelID;
+        this.bean = null;
+    }
 
     /**
      * Create a new {@link TornadoFeatureVector} to wrap the given {@link TornadoFeatureVectorBean}.
@@ -19,6 +25,7 @@ public class TornadoFeatureVector {
      * @param tornadoFeatureVectorBean The {@link TornadoFeatureVectorBean} to be wrapped
      */
     public TornadoFeatureVector(final TornadoFeatureVectorBean tornadoFeatureVectorBean) {
+        this.kernelID = null;
         this.bean = tornadoFeatureVectorBean;
     }
 
@@ -31,6 +38,7 @@ public class TornadoFeatureVector {
      *                              {@link TornadoFeatureVectorBean}s are to be accumulated and wrapped
      */
     public TornadoFeatureVector(final List<TornadoFeatureVector> tornadoFeatureVectors) {
+        this.kernelID = null;
         final TornadoFeatureVectorBean accBean = new TornadoFeatureVectorBean();
         for (TornadoFeatureVector tornadoFeatureVector : tornadoFeatureVectors) {
             final TornadoFeatureVectorBean currBean = tornadoFeatureVector.getBean();
@@ -76,6 +84,10 @@ public class TornadoFeatureVector {
     // --------------------------------------------------------------------------------------------
 
 
+    public String getKernelID() {
+        return this.kernelID;
+    }
+
     public TornadoFeatureVectorBean getBean() {
         return this.bean;
     }
@@ -87,7 +99,8 @@ public class TornadoFeatureVector {
     @Override
     public String toString() {
         return "TornadoFeatureVector{" +
-                "bean=" + bean +
+                "kernelID='" + kernelID + '\'' +
+                ", bean=" + bean +
                 '}';
     }
 

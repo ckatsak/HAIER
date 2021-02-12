@@ -164,6 +164,9 @@ public class HaierExecutionGraph {
 
     // --------------------------------------------------------------------------------------------
 
+    private static boolean isComputationalEval(final JobVertex jobVertex) {
+        return !jobVertex.getName().startsWith("DataSink");
+    }
 
     private static final List<String> NON_COMPUTATIONAL_OPERATOR_NAMES = new ArrayList<String>() {{
         add("DataSource");
@@ -198,7 +201,8 @@ public class HaierExecutionGraph {
      * @return {@code true} if it can be offloaded; {@code false} otherwise
      */
     public static boolean isComputational(final JobVertex jobVertex) {
-        return isComputationalBasedOnDriverClass(jobVertex);
+        return isComputationalEval(jobVertex);
+//        return isComputationalBasedOnDriverClass(jobVertex);
 //        return isComputationalBasedOnName(jobVertex);
     }
 

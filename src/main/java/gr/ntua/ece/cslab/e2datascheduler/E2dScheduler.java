@@ -7,6 +7,8 @@ import gr.ntua.ece.cslab.e2datascheduler.ml.Model;
 import gr.ntua.ece.cslab.e2datascheduler.ml.ModelLibrary;
 import gr.ntua.ece.cslab.e2datascheduler.ml.impl.DemoModel;
 import gr.ntua.ece.cslab.e2datascheduler.ml.impl.DummyCSLabModel;
+import gr.ntua.ece.cslab.e2datascheduler.ml.impl.EvalModel;
+import gr.ntua.ece.cslab.e2datascheduler.ml.impl.TornadoModel;
 import gr.ntua.ece.cslab.e2datascheduler.optimizer.Optimizer;
 import gr.ntua.ece.cslab.e2datascheduler.optimizer.Parameters;
 import gr.ntua.ece.cslab.e2datascheduler.optimizer.nsga.NSGAIIHaierOptimizer;
@@ -181,13 +183,13 @@ public class E2dScheduler {
             this.planQueues.put(jobId, new SelectionQueue<>());
         }
 
-        final Model selectedModel;
-        if (policy.getMlModel() == null || !this.models.containsKey(policy.getMlModel())) {
-            selectedModel = this.models.get(DEFAULT_MODEL);
-            //selectedModel = new DemoModel();
-        } else {
-            selectedModel = this.models.get(policy.getMlModel());
-        }
+        final Model selectedModel = new EvalModel();
+//        if (policy.getMlModel() == null || !this.models.containsKey(policy.getMlModel())) {
+//            selectedModel = this.models.get(DEFAULT_MODEL);
+//            //selectedModel = new DemoModel();
+//        } else {
+//            selectedModel = this.models.get(policy.getMlModel());
+//        }
 
         //return new NSGAIIHaierOptimizer().optimize(jobGraph, policy, selectedModel);
         //return this.optimizer.optimize(jobGraph, policy, selectedModel);
