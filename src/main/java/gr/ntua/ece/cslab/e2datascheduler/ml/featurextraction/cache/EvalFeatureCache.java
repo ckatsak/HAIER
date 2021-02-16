@@ -74,9 +74,9 @@ public class EvalFeatureCache implements FeatureCache {
      */
     @Override
     public List<TornadoFeatureVector> getFeatureVectors(final JobVertex jobVertex, final HwResource device) {
-        logger.finest("Retrieving cached feature vector for JobVertex '" + jobVertex.getID() +
-                "' on OpenCL-enabled device '" + device.getName() + " @ " + device.getHost() + "'...");
-//        logger.finest("Feature cache contents: " + this.cacheEntryMap.toString());
+//        logger.finest("Retrieving cached feature vector for JobVertex '" + jobVertex.getID() +
+//                "' on OpenCL-enabled device '" + device.getName() + " @ " + device.getHost() + "'...");
+////        logger.finest("Feature cache contents: " + this.cacheEntryMap.toString());
         // Non-computational JobVertices won't be cached, but they shouldn't be queried either, so just
         // store null in their ScheduledJobVertex's TornadoFeatureVector field.
         if (null == this.cacheEntryMap.get(jobVertex)) {

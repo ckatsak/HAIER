@@ -61,6 +61,8 @@ import java.io.ObjectInputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.Constructor;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
@@ -251,6 +253,7 @@ public class SchedulerService extends AbstractE2DataService {
             //@FormDataParam("file") InputStream uploadedInputStream,
             @FormDataParam("file") final FormDataBodyPart formDataBodyPart,
             @FormDataParam("file") final FormDataContentDisposition fileDetail) {
+        final Instant startTime = Instant.now();
         final InputStream uploadedInputStream = formDataBodyPart.getValueAs(InputStream.class);
         logger.finest("Just received a POST request on /e2data/flink-schedule !");
 
@@ -327,6 +330,8 @@ public class SchedulerService extends AbstractE2DataService {
         final List<SerializableScheduledJobVertex> responseBody = resultGraph.toSerializableScheduledJobVertexList();
         logger.finest("Response body returned to Flink for '" + jobGraph.toString() + "':\n" +
                 new GsonBuilder().setPrettyPrinting().create().toJson(responseBody));
+        Instant endTime = Instant.now();
+        logger.info("Total Elapsed Time: " + Duration.between(startTime, endTime).toMillis() + "milliseconds");
         return generateResponse(Response.Status.OK, responseBody);
     }
 
