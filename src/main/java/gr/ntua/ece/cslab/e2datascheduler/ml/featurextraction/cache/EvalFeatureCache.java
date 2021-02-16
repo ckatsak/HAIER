@@ -35,19 +35,41 @@ public class EvalFeatureCache implements FeatureCache {
             final String[] jobVertexOperators = jobVertex.getName().split(" -> ");
             final List<TornadoFeatureVector> jobVertexKernels = new ArrayList<>(jobVertexOperators.length);
             for (String operator : jobVertexOperators) {
-                final String kernelName;
+                String kernelName;
+                //
+                // Sparkworks (4 OpenCL kernels over 4 operators across 1 JobVertex)
+                //
                 if (operator.contains("SparkWorksAllReduce.java:73")) {
-                    kernelName = "prebuilt-sparkworks-reduce-average.cl";
+                    kernelName = "prebuilt-sparkworks-reduce-min.cl";
                 } else if (operator.contains("SparkWorksAllReduce.java:78")) {
                     kernelName = "prebuilt-sparkworks-reduce-max.cl";
                 } else if (operator.contains("SparkWorksAllReduce.java:79")) {
                     kernelName = "prebuilt-sparkworks-reduce-sum.cl";
                 } else if (operator.contains("SparkWorksAllReduce.java:80")) {
-                    kernelName = "prebuilt-sparkworks-reduce-min.cl";
-                } else if (operator.contains("ExusFlinkTornado.java:47")) {
+                    kernelName = "prebuilt-sparkworks-reduce-average.cl";
+                //
+                // Exus (7 OpenCL kernels over 6 operators across 2 JobVertices)
+                //
+                } else if (operator.contains("ExusFlinkTornado.java:74")) {
+                    kernelName = "SubUpdate.cl";
+                } else if (operator.contains("ExusFlinkTornado.java:76")) {
+                    // This Flink Reduce is broken into a Tornado Map...
                     kernelName = "prebuilt-exus-map-reduction.cl";
-                } else if (operator.contains("ExusFlinkTornado.java:48")) {
-                    kernelName = "prebuilt-exus-reduction-UpdateAccum.cl";
+                    logger.finest("Adding new Operator '" + kernelName + "' for JobVertex " + jobVertex.getID());
+                    jobVertexKernels.add(new TornadoFeatureVector(kernelName));
+                    // and a Tornado Reduce:
+                    kernelName =  "prebuilt-exus-reduction-UpdateAccum";
+                    logger.finest("Adding new Operator '" + kernelName + "' for JobVertex " + jobVertex.getID());
+                    jobVertexKernels.add(new TornadoFeatureVector(kernelName));
+                    continue;
+                } else if (operator.contains("ExusFlinkTornado.java:78")) {
+                    kernelName = "Update.cl";
+                } else if (operator.contains("ExusFlinkTornado.java:84")) {
+                    kernelName = "Predict.cl";
+                } else if (operator.contains("ExusFlinkTornado.java:85")) {
+                    kernelName = "prebuilt-exus-reduction-ints.cl";
+                } else if (operator.contains("ExusFlinkTornado.java:86")) {
+                    kernelName = "ComputeMetrics.cl";
                 } else {
                     logger.warning("Unknown Operator named '" + operator + "' not supported in this execution mode");
                     continue;

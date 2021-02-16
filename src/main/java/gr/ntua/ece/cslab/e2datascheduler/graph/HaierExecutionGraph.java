@@ -201,8 +201,8 @@ public class HaierExecutionGraph {
      * @return {@code true} if it can be offloaded; {@code false} otherwise
      */
     public static boolean isComputational(final JobVertex jobVertex) {
-        return isComputationalEval(jobVertex);
-//        return isComputationalBasedOnDriverClass(jobVertex);
+//        return isComputationalEval(jobVertex);
+        return isComputationalBasedOnDriverClass(jobVertex);
 //        return isComputationalBasedOnName(jobVertex);
     }
 
