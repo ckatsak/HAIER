@@ -72,9 +72,9 @@ class Graph {
      * @param y is the second integer.
      * @return the GCD of the two integers.
      */
-    private static int gcd(int x, int y) {
+    private static long gcd(long x, long y) {
         while (y != 0) {
-            int temp = x;
+            long temp = x;
             //noinspection SuspiciousNameCombination
             x = y;
             y = temp % y;
@@ -87,12 +87,12 @@ class Graph {
      * @param durations is the list of integers.
      * @return the GCD of the given list of integers.
      */
-    private static int multiGcd(final List<Integer> durations) {
+    private static long multiGcd(final List<Long> durations) {
         if (durations.size() == 1) {
             return durations.get(0);
         }
 
-        int totalGcd = gcd(durations.get(0), durations.get(1));
+        long totalGcd = gcd(durations.get(0), durations.get(1));
         if (durations.size() > 2) {
             for (int i = 2; i < durations.size(); i++) {
                 totalGcd = gcd(totalGcd, durations.get(i));
@@ -112,21 +112,21 @@ class Graph {
     List<Double> haierEvaluation() {
         /* Initialization */
         TaskList tasks = new TaskList(this.tasks);
-        HashMap<HwResource, Integer> devices = new HashMap<>();
-        List<Integer> fakeDurations = new ArrayList<>(tasks.size());
+        HashMap<HwResource, Long> devices = new HashMap<>();
+        List<Long> fakeDurations = new ArrayList<>(tasks.size());
         for (int i = 0; i < tasks.size(); i++) {
             Task task = tasks.get(i);
             if (!devices.containsKey(task.getDevice())) {
-                devices.put(task.getDevice(), 0);
+                devices.put(task.getDevice(), 0L);
             }
             fakeDurations.add(task.getFakeDuration());
         }
-        int step = multiGcd(fakeDurations);
+        long step = multiGcd(fakeDurations);
 
         /* Main Iteration */
         List<Evaluation> completedEvaluations = new ArrayList<>();
         Stack<Evaluation> stack = new Stack<>();
-        stack.push(new Evaluation(this, 0, new TaskList(tasks), (HashMap<HwResource, Integer>) devices.clone()));
+        stack.push(new Evaluation(this, 0, new TaskList(tasks), (HashMap<HwResource, Long>) devices.clone()));
         while (!stack.isEmpty()) {
             //System.err.printf("\n\n\n----------------------------------- NEW EVALUATION -----------------------------------\n");
             //System.err.printf("LEN(completedEvaluations) = %d\n", completedEvaluations.size());
@@ -153,7 +153,7 @@ class Graph {
                     //System.err.printf("LEN(remainingTasksInRound) = %d\n", remainingTasksInRound.size());
                     Task task = remainingTasksInRound.remove();
                     /* If current Task can now be run on its own device: */
-                    if (task.getPathCost() == -1 && currentEvaluation.dataDepReady(task) &&
+                    if (task.getPathCost() == -1L && currentEvaluation.dataDepReady(task) &&
                             currentEvaluation.getDevices().get(task.getDevice()) <= currentEvaluation.getCurrentTime()) {
                         //System.err.printf("READY: %s\n", task);
                         /* Check if any of the remaining tasks can now be run on the same device as well, and put
@@ -238,7 +238,7 @@ class Graph {
                             //System.err.printf("\tPair: %s\n", pair);
                             assert pair.device == pair.task.getDevice() : "pair.device != pair.task.device";
                             TaskList newTasks = new TaskList(currentEvaluation.getTasks());
-                            HashMap<HwResource, Integer> newDevices = (HashMap<HwResource, Integer>) currentEvaluation.getDevices().clone();
+                            HashMap<HwResource, Long> newDevices = (HashMap<HwResource, Long>) currentEvaluation.getDevices().clone();
                             newTasks.get(pair.task.getIndex()).setPathCost(
                                     currentEvaluation.getCurrentTime() + pair.task.getFakeDuration());
                             newDevices.put(pair.device, newTasks.get(pair.task.getIndex()).getPathCost());
@@ -267,7 +267,7 @@ class Graph {
                             List<DeviceTaskPair> fork = CartesianProduct.flatten((List<?>) multiLevelFork);
                             //System.err.printf("CART_PROD (FORK): " + fork);
                             TaskList newTasks = new TaskList(currentEvaluation.getTasks());
-                            HashMap<HwResource, Integer> newDevices = (HashMap<HwResource, Integer>) currentEvaluation.getDevices().clone();
+                            HashMap<HwResource, Long> newDevices = (HashMap<HwResource, Long>) currentEvaluation.getDevices().clone();
                             for (DeviceTaskPair pair : fork) {
                                 assert pair.device == pair.task.getDevice() : "pair.device != pair.task.device";
                                 newTasks.get(pair.task.getIndex()).setPathCost(
@@ -299,8 +299,8 @@ class Graph {
              * Alternatively, we could just compare the device availability times and grab the max one. */
             double evalMaxSink = 0.0d;
             for (Task task : this.sinks) {
-                int pathCost = eval.getTasks().get(task.getIndex()).getPathCost();
-                if (pathCost > (int) evalMaxSink * Task.FAKE_DURATION_FACTOR) {
+                long pathCost = eval.getTasks().get(task.getIndex()).getPathCost();
+                if (pathCost > (long) evalMaxSink * Task.FAKE_DURATION_FACTOR) {
                     evalMaxSink = pathCost / (double) Task.FAKE_DURATION_FACTOR;
                 }
             }

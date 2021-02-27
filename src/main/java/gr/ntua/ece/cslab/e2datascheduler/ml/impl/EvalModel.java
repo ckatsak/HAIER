@@ -140,7 +140,10 @@ public class EvalModel extends Model {
         for (int i = 0; i < tornadoFeatures.size(); i++) {
             upstreamResponses[i] = EvalModel.queryModel(objective, device, tornadoFeatures.get(i));
         }
-        return this.combinePredictedValues(upstreamResponses);
+        final double ret = this.combinePredictedValues(upstreamResponses);
+        logger.finer("Combined value for objective '" + objective + "' @ '" + device + "' for '" +
+                tornadoFeatures + "' is equal to: " + ret);
+        return ret;
     }
 
     /**
@@ -232,6 +235,8 @@ public class EvalModel extends Model {
         final Double predictedValue;
         try {
             predictedValue = objectMapper.readValue(response.toString(), Double.class);
+            logger.finer("Objective '" + objective + "' @ '" + device + "' for '" + tornadoFeatures.getKernelID() +
+                    "' is: " + predictedValue);
         } catch (IOException e) {
             logger.log(Level.SEVERE, "Could not JSON-unmarshall '" + response.toString() + "': " + e.getMessage(), e);
             throw new RuntimeException(e);

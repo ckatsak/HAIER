@@ -12,7 +12,7 @@ class Task {
      * FAKE_DURATION_FACTOR is the integer (power of 10) number by which we have to multiply the estimated duration of
      * the Task in order to make it an integer without losing accuracy.
      */
-    static final int FAKE_DURATION_FACTOR = 1000;
+    static final long FAKE_DURATION_FACTOR = 100000000;
 
     /**
      * A unique ID for each Task in a Graph.
@@ -42,12 +42,12 @@ class Task {
     /**
      * Same as this.duration, multiplied by {@code Task.FAKE_DURATION_FACTOR} and cast to int.
      */
-    private int fakeDuration;
+    private long fakeDuration;
     /**
      * The total time (fakeDurations) that is required for the execution of this Task to be completed, having taken
      * into account both the data and the device dependencies. (NOTE: this.fakeDuration is included)
      */
-    private int pathCost;
+    private long pathCost;
 
     // --------------------------------------------------------------------------------------------
 
@@ -60,7 +60,7 @@ class Task {
         this.isSource = isSource;
 
         this.parents = new ArrayList<>();
-        this.fakeDuration = (int) this.duration * Task.FAKE_DURATION_FACTOR;
+        this.fakeDuration = (long) this.duration * Task.FAKE_DURATION_FACTOR;
         this.pathCost = -1;
     }
 
@@ -100,7 +100,7 @@ class Task {
         return duration;
     }
 
-    int getFakeDuration() {
+    long getFakeDuration() {
         return fakeDuration;
     }
 
@@ -120,11 +120,11 @@ class Task {
         this.parents = parents;
     }
 
-    int getPathCost() {
+    long getPathCost() {
         return pathCost;
     }
 
-    void setPathCost(int pathCost) {
+    void setPathCost(long pathCost) {
         this.pathCost = pathCost;
     }
 

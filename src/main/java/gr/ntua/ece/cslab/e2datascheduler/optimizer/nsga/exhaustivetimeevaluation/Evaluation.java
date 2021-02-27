@@ -7,11 +7,11 @@ import java.util.HashMap;
 class Evaluation {
 
     private final Graph graph;
-    private int currentTime;
+    private long currentTime;
     private final TaskList tasks;
-    private final HashMap<HwResource, Integer> devices;
+    private final HashMap<HwResource, Long> devices;
 
-    Evaluation(final Graph graph, final int currentTime, final TaskList tasks, final HashMap<HwResource, Integer> devices) {
+    Evaluation(final Graph graph, final long currentTime, final TaskList tasks, final HashMap<HwResource, Long> devices) {
         this.graph = graph;
         this.currentTime = currentTime;
         this.tasks = tasks;
@@ -29,7 +29,7 @@ class Evaluation {
 
     boolean dataDepReady(final Task task) {
         for (int parent : task.getParents()) {
-            int pathCost = this.tasks.get(parent).getPathCost();
+            long pathCost = this.tasks.get(parent).getPathCost();
             if (pathCost == -1 || pathCost > this.currentTime) {
                 return false;
             }
@@ -37,11 +37,11 @@ class Evaluation {
         return true;
     }
 
-    int getCurrentTime() {
+    long getCurrentTime() {
         return currentTime;
     }
 
-    void timeStep(final int step) {
+    void timeStep(final long step) {
         currentTime += step;
     }
 
@@ -49,7 +49,7 @@ class Evaluation {
         return tasks;
     }
 
-    HashMap<HwResource, Integer> getDevices() {
+    HashMap<HwResource, Long> getDevices() {
         return devices;
     }
 
