@@ -170,7 +170,13 @@ public final class NSGAIIHaierOptimizer implements Optimizer {
                 logger.finer("\tYarn detected available hardware resource: " + r);
                 // If multiple GPUs or FPGAs of the same model are present, they should be represented as distinct
                 // hardware resource objects; so a distinct HwResource instance is allocated for each of them.
-                this.devices.add(r);
+                if (r.getName().startsWith("yarn.io/gpu") || r.getName().startsWith("yarn.io/fpga")) {
+                    for (int i = 0; i < r.getValue(); i++) {
+                        this.devices.add(new HwResource(r));
+                    }
+                } else {
+                    this.devices.add(r);
+                }
             }
         }
 /*

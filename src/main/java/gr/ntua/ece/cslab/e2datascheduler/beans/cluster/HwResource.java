@@ -18,6 +18,15 @@ public class HwResource {
      */
     public HwResource() {}
 
+    public HwResource(final HwResource hwResource) {
+        this.maximumAllocation = hwResource.maximumAllocation;
+        this.minimumAllocation = hwResource.minimumAllocation;
+        this.name = hwResource.name;
+        this.units = hwResource.units;
+        this.value = 1;
+        this.host = hwResource.host;
+    }
+
     /**
      * Clone from an existing instance, but setting the {@code value} field to 1 and appending <code>-{id}</code>
      * to its {@code name} field.
